@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pavvis"
+version = "0.1.0"
+description = "Visualisation tools for gene Presence/Absence Variation (PAV) matrix data"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas",
+    "plotly",
+    "umap-learn",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pavvis"]
