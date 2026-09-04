@@ -27,12 +27,16 @@ def test_init_accepts_path_objects(tmp_path):
     pav_path = _write_tmp(tmp_path, "pav.csv", PAV_CSV)
     meta_path = _write_tmp(tmp_path, "meta.csv", META_CSV)
     pm = PavMatrix(pav_path, meta_path)
-    assert pm.pav is not None
-    assert pm.metadata is not None
+    assert pm.pav.shape == (2, 3)
+    assert list(pm.pav.columns) == ["sample_a", "sample_b", "sample_c"]
+    assert list(pm.pav.index) == ["gene_1", "gene_2"]
+    assert pm.metadata.shape == (3, 2)
+    assert list(pm.metadata.index) == ["sample_a", "sample_b", "sample_c"]
 
 
 def test_init_accepts_strings(tmp_path):
     pav_path = _write_tmp(tmp_path, "pav.csv", PAV_CSV)
     meta_path = _write_tmp(tmp_path, "meta.csv", META_CSV)
     pm = PavMatrix(str(pav_path), str(meta_path))
-    assert pm.pav is not None
+    assert pm.pav.shape == (2, 3)
+    assert pm.metadata.shape == (3, 2)
