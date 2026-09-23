@@ -35,6 +35,9 @@ class PavMatrix:
         self.pav: pd.DataFrame = pd.read_csv(matrix_path, index_col=0)
         self.metadata: pd.DataFrame = pd.read_csv(metadata_path, index_col=0)
 
+        # Normalise metadata column names to lowercase with no surrounding whitespace.
+        self.metadata.columns = self.metadata.columns.str.strip().str.lower()
+
         # Checks to affirm files are of the correct structure. (Can add other checks here).
         validate_sample_alignment(self.pav, self.metadata)
         validate_pav_values(self.pav)

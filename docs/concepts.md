@@ -54,6 +54,6 @@ collection of functions. This allows the object to:
 
 - **Validate on load** — bad inputs are caught immediately, not silently propagated
 - **Cache derived values** — computationally expensive results (UMAP embeddings,
-  pangenome curves) can be stored on the object after first calculation
+  pangenome curves) can be stored on the object after the first calculation
 - **Carry context** — the PAV data and its metadata travel together, reducing the
-  chance of mismatched inputs in multi-step workflows
+  chance of mismatched inputs in multistep workflows

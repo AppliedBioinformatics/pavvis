@@ -51,7 +51,7 @@ print(pm.variable_genes[:3])
 print(pm.absent_genes[:3])
 
 # Presence frequency (fraction of samples) per gene
-print(pm.presence_frequency.describe())
+print(pm.presence_frequency_histogram.describe())
 ```
 
 ## First plot
@@ -60,8 +60,8 @@ print(pm.presence_frequency.describe())
 import pavvis.plots as plots
 
 # Histogram of presence frequencies (log y-axis)
-plots.presence_frequency(pm).show()
+plots.presence_frequency_histogram(pm).show()
 
 # Bar chart of top 50 genes by presence frequency
-plots.presence_frequency(pm, type="bar").show()
+plots.presence_frequency_histogram(pm, type="bar").show()
 ```
