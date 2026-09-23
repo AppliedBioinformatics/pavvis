@@ -1,0 +1,37 @@
+site_name: Pavvis
+site_description: Visualisation tools for gene Presence/Absence Variation (PAV) matrix data
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: teal
+      accent: light green
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: true
+            members_order: source
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Concepts: concepts.md
+  - API Reference:
+    - PavMatrix: api/pav_matrix.md
+    - plots: api/plots.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
