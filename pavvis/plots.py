@@ -49,7 +49,7 @@ def presence_frequency_histogram(
 def presence_per_sample_boxplot(
     pm: PavMatrix,
     gene_set: Literal["all", "variable", "core"] = "all",
-    color_by: str | None = None,
+    x: str | None = None,
 ) -> go.Figure:
     """Plot the distribution of gene counts per sample as a box plot.
 
@@ -57,18 +57,17 @@ def presence_per_sample_boxplot(
         pm: A PavMatrix instance.
         gene_set: Which genes to count per sample — 'all', 'variable', or 'core'.
             Defaults to 'all'.
-        color_by: A discrete metadata column to group samples by. Each unique
-            value becomes a separate box. Pass None for a single box across all
-            samples.
+        x: A discrete metadata column to group samples by. Each unique value
+            becomes a separate box. Pass None for a single box across all samples.
 
     Returns:
         A Plotly Figure. Call .show() to display or .write_html() to export.
 
     Raises:
-        ValueError: If color_by is not None and is not a discrete metadata column.
+        ValueError: If x is not None and is not a discrete metadata column.
     """
-    if color_by is not None:
-        validate_color_by(color_by, pm.metadata, expected_type="discrete")
+    if x is not None:
+        validate_color_by(x, pm.metadata, expected_type="discrete")
 
     gene_index = {
         "all": pm.pav.index,
@@ -85,11 +84,11 @@ def presence_per_sample_boxplot(
     }
     title, yaxis_title = titles[gene_set]
 
-    if color_by is not None:
-        categories = sorted(pm.metadata[color_by].dropna().unique().astype(str))
+    if x is not None:
+        categories = sorted(pm.metadata[x].dropna().unique().astype(str))
         traces = []
         for cat in categories:
-            samples = pm.metadata.index[pm.metadata[color_by].astype(str) == cat]
+            samples = pm.metadata.index[pm.metadata[x].astype(str) == cat]
             traces.append(go.Box(
                 y=counts.loc[samples].values,
                 text=samples.tolist(),
@@ -109,7 +108,7 @@ def presence_per_sample_boxplot(
 
     fig.update_layout(
         title=title,
-        xaxis_title=color_by if color_by is not None else "",
+        xaxis_title=x if x is not None else "",
         yaxis_title=yaxis_title,
     )
 

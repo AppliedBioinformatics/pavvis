@@ -38,6 +38,13 @@ class PavMatrix:
         # Normalise metadata column names to lowercase with no surrounding whitespace.
         self.metadata.columns = self.metadata.columns.str.strip().str.lower()
 
+        # Cast numeric-looking columns to float64 so dtype-based inference is reliable.
+        def _try_numeric(col: pd.Series) -> pd.Series:
+            converted = pd.to_numeric(col, errors="coerce")
+            return converted if converted.notna().all() else col
+
+        self.metadata = self.metadata.apply(_try_numeric)
+
         # Checks to affirm files are of the correct structure. (Can add other checks here).
         validate_sample_alignment(self.pav, self.metadata)
         validate_pav_values(self.pav)
