@@ -68,6 +68,9 @@ class PavMatrix:
         validate_sample_alignment(self.pav, self.metadata)
         validate_pav_values(self.pav)
 
+        self._umap_embedding: pd.DataFrame | None = None
+        self._umap_params: tuple | None = None
+
     # Built ins.
     def __repr__(self) -> str:
         """Return a summary string of the form 'PavMatrix(N genes × M samples)'."""
@@ -191,6 +194,53 @@ class PavMatrix:
             "private": len(self.private_genes),
             "absent": len(self.absent_genes),
         }
+
+    def compute_umap(
+        self,
+        n_neighbors: int = 15,
+        min_dist: float = 0.1,
+        metric: str = "jaccard",
+        random_state: int | None = None,
+    ) -> PavMatrix:
+        """Compute a 3D UMAP embedding of the samples and cache it on this object.
+
+        Always computes 3 components so the result can be used for both 2D and 3D
+        plots without recomputing. The embedding is computed on the transposed PAV
+        matrix (samples × genes). Re-calling with the same parameters returns the
+        cached result immediately. Re-calling with different parameters recomputes
+        and overwrites the cache.
+
+        Args:
+            n_neighbors: UMAP n_neighbors parameter. Controls local vs global
+                structure. Defaults to 15.
+            min_dist: UMAP min_dist parameter. Controls how tightly points are
+                packed. Defaults to 0.1.
+            metric: Distance metric passed to UMAP. Defaults to 'jaccard', which
+                ignores shared absences and is appropriate for binary PAV data.
+            random_state: Random seed for reproducibility. Defaults to None.
+
+        Returns:
+            self, so calls can be chained: pm.compute_umap().plot...
+        """
+        import umap as umap_lib
+
+        params = (n_neighbors, min_dist, metric, random_state)
+        if self._umap_params == params and self._umap_embedding is not None:
+            return self
+
+        reducer = umap_lib.UMAP(
+            n_neighbors=n_neighbors,
+            min_dist=min_dist,
+            metric=metric,
+            n_components=3,
+            random_state=random_state,
+        )
+        coords = reducer.fit_transform(self.pav.T.values)
+        self._umap_embedding = pd.DataFrame(
+            coords, index=self.pav.columns, columns=["UMAP1", "UMAP2", "UMAP3"]
+        )
+        self._umap_params = params
+        return self
 
     def exclusive_gene_counts(self, column: str) -> dict[str, int]:
         """Count exclusive variable genes for each group in a discrete metadata column.
