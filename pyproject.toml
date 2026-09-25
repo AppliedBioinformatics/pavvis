@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Visualisation tools for gene Presence/Absence Variation (PAV) matrix data"
 requires-python = ">=3.10"
 dependencies = [
+    "numpy",
     "pandas",
     "plotly",
     "umap-learn",

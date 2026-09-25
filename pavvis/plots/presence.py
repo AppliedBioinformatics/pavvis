@@ -2,19 +2,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
-import pandas as pd
 import plotly.graph_objects as go
-import plotly.io as pio
 
-from pavvis._validation import validate_color_by, infer_column_type
-
-pio.templates.default = "simple_white"
+from pavvis._validation import validate_color_by
+from pavvis.plots._helpers import _resolve_gene_index, _gene_set_labels
 
 if TYPE_CHECKING:
     from pavvis.pav_matrix import PavMatrix
 
 
-def presence_frequency_histogram(
+def frequency_histogram(
     pm: PavMatrix,
     n_bins: int | None = None,
 ) -> go.Figure:
@@ -46,7 +43,8 @@ def presence_frequency_histogram(
 
     return fig
 
-def presence_per_sample_boxplot(
+
+def per_sample_boxplot(
     pm: PavMatrix,
     gene_set: Literal["all", "variable", "core"] = "all",
     x: str | None = None,
@@ -69,20 +67,9 @@ def presence_per_sample_boxplot(
     if x is not None:
         validate_color_by(x, pm.metadata, expected_type="discrete")
 
-    gene_index = {
-        "all": pm.pav.index,
-        "variable": pm.variable_genes,
-        "core": pm.core_genes,
-    }[gene_set]
-
+    gene_index = _resolve_gene_index(pm, gene_set)
     counts = pm.pav.loc[gene_index].sum(axis=0)
-
-    titles = {
-        "all": ("Gene Count per Sample", "Number of Genes"),
-        "variable": ("Variable Gene Count per Sample", "Number of Variable Genes"),
-        "core": ("Core Gene Count per Sample", "Number of Core Genes"),
-    }
-    title, yaxis_title = titles[gene_set]
+    title, yaxis_title = _gene_set_labels(gene_set)
 
     if x is not None:
         categories = sorted(pm.metadata[x].dropna().unique().astype(str))
@@ -115,7 +102,7 @@ def presence_per_sample_boxplot(
     return fig
 
 
-def presence_per_sample_scatter(
+def per_sample_scatter(
     pm: PavMatrix,
     x: str,
     gene_set: Literal["all", "variable", "core"] = "all",
@@ -141,22 +128,11 @@ def presence_per_sample_scatter(
     if color_by is not None:
         validate_color_by(color_by, pm.metadata, expected_type="discrete")
 
-    gene_index = {
-        "all": pm.pav.index,
-        "variable": pm.variable_genes,
-        "core": pm.core_genes,
-    }[gene_set]
-
+    gene_index = _resolve_gene_index(pm, gene_set)
     counts = pm.pav.loc[gene_index].sum(axis=0)
     samples = counts.index.tolist()
     x_values = pm.metadata.loc[samples, x].tolist()
-
-    titles = {
-        "all": ("Gene Count per Sample", "Number of Genes"),
-        "variable": ("Variable Gene Count per Sample", "Number of Variable Genes"),
-        "core": ("Core Gene Count per Sample", "Number of Core Genes"),
-    }
-    title, yaxis_title = titles[gene_set]
+    title, yaxis_title = _gene_set_labels(gene_set)
 
     if color_by is not None:
         categories = sorted(pm.metadata[color_by].dropna().unique().astype(str))
