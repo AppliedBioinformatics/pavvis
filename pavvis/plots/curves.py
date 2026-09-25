@@ -338,3 +338,141 @@ def grouped_variable_curve(
     )
 
     return fig
+
+
+def jaccard_similarity_curve(
+    pm: PavMatrix,
+    column: str,
+    group_order: Sequence[str],
+    permutations: int = 100,
+    shade_groups: bool = False,
+) -> go.Figure:
+    """Plot mean pairwise Jaccard similarity as genomes are accumulated by group.
+
+    Groups are added in the order specified by `group_order`. Within each group
+    the sample order is randomly permuted `permutations` times; the group
+    sequence itself is fixed. At each step k the mean Jaccard similarity across
+    all C(k,2) pairs of genomes accumulated so far is recorded. A drop when a
+    new group is introduced indicates that group is divergent from those already
+    seen; stability indicates similarity. The mean and ±1 std band across
+    permutations are shown. Clicking the legend entry toggles both.
+
+    Args:
+        pm: A PavMatrix instance.
+        column: Metadata column used to assign samples to groups.
+        group_order: Sequence of group labels defining the order in which
+            groups are added. Every value must be present in pm.metadata[column].
+        permutations: Number of within-group random orderings to average over.
+            Defaults to 100.
+        shade_groups: If True, alternating groups are shaded with a light grey
+            background. Defaults to False.
+
+    Returns:
+        A Plotly Figure. Call .show() to display or .write_html() to export.
+
+    Raises:
+        ValueError: If `column` is not in pm.metadata, or if any value in
+            `group_order` is not found in pm.metadata[column].
+    """
+    if column not in pm.metadata.columns:
+        raise ValueError(
+            f"'{column}' is not a metadata column. "
+            f"Available columns: {list(pm.metadata.columns)}"
+        )
+
+    col = pm.metadata[column].astype(str)
+    missing = [g for g in group_order if g not in col.values]
+    if missing:
+        raise ValueError(
+            f"Groups not found in metadata column '{column}': {missing}. "
+            f"Available values: {sorted(col.unique())}"
+        )
+
+    pav = pm.pav.values.astype(np.float32)  # (genes, samples)
+    sample_ids = list(pm.pav.columns)
+    group_indices: list[list[int]] = [
+        [sample_ids.index(s) for s in pm.metadata.index[col == g]]
+        for g in group_order
+    ]
+
+    n_total = pav.shape[1]
+    # x starts at 2 — need at least one pair
+    x = list(range(2, n_total + 1))
+    sim_runs = np.empty((permutations, n_total - 1), dtype=np.float32)
+
+    rng = np.random.default_rng()
+    for i in range(permutations):
+        order = np.concatenate([
+            rng.permutation(idx) for idx in group_indices
+        ])
+        for k in range(2, n_total + 1):
+            sub = pav[:, order[:k]]
+            inter = sub.T @ sub
+            counts = sub.sum(axis=0)
+            union = counts[:, None] + counts[None, :] - inter
+            idx_upper = np.triu_indices(k, k=1)
+            sim_runs[i, k - 2] = (inter[idx_upper] / union[idx_upper]).mean()
+
+    sim_mean = sim_runs.mean(axis=0)
+    sim_std = sim_runs.std(axis=0)
+
+    traces = [
+        go.Scatter(
+            x=x, y=(sim_mean + sim_std).tolist(),
+            mode="lines", line=dict(width=0),
+            legendgroup="jaccard", showlegend=False, hoverinfo="skip",
+        ),
+        go.Scatter(
+            x=x, y=(sim_mean - sim_std).tolist(),
+            mode="lines", line=dict(width=0),
+            fill="tonexty", fillcolor="rgba(0,204,150,0.2)",
+            legendgroup="jaccard", showlegend=False, hoverinfo="skip",
+        ),
+        go.Scatter(
+            x=x, y=sim_mean.tolist(),
+            mode="lines", name="Mean Jaccard similarity",
+            line=dict(color="rgb(0,204,150)", width=2),
+            legendgroup="jaccard",
+        ),
+    ]
+
+    fig = go.Figure(traces)
+
+    # Boundary lines, shading, and group labels
+    boundaries: list[float] = []
+    cumulative = 0
+    for idx in group_indices[:-1]:
+        cumulative += len(idx)
+        boundaries.append(cumulative + 0.5)
+
+    cumulative = 0
+    for i, (group, idx) in enumerate(zip(group_order, group_indices)):
+        x0 = cumulative + 0.5
+        x1 = cumulative + len(idx) + 0.5
+        if shade_groups and i % 2 == 1:
+            fig.add_vrect(
+                x0=x0, x1=x1,
+                fillcolor="rgba(0,0,0,0.06)", layer="below",
+                line_width=0,
+            )
+        fig.add_annotation(
+            x=(x0 + x1) / 2, y=1, yref="paper",
+            text=group, showarrow=False,
+            font=dict(size=11), yanchor="bottom",
+        )
+        cumulative += len(idx)
+
+    for bx in boundaries:
+        fig.add_vline(x=bx, line=dict(color="grey", width=1, dash="dash"))
+
+    fig.update_layout(
+        title=f"Jaccard Similarity Curve by {column} ({permutations} permutations)",
+        xaxis_title="Number of Genomes",
+        yaxis_title="Mean Pairwise Jaccard Similarity",
+        yaxis=dict(range=[
+            max(0.0, float((sim_mean - sim_std).min()) - 0.05),
+            min(1.0, float((sim_mean + sim_std).max()) + 0.05),
+        ]),
+    )
+
+    return fig
