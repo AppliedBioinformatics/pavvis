@@ -46,7 +46,7 @@ def frequency_histogram(
 
 def per_sample_boxplot(
     pm: PavMatrix,
-    gene_set: Literal["all", "variable", "core"] = "all",
+    gene_set: Literal["all", "variable", "core", "soft_core", "dispensable", "private"] = "all",
     x: str | None = None,
 ) -> go.Figure:
     """Plot the distribution of gene counts per sample as a box plot.
@@ -105,7 +105,7 @@ def per_sample_boxplot(
 def per_sample_scatter(
     pm: PavMatrix,
     x: str,
-    gene_set: Literal["all", "variable", "core"] = "all",
+    gene_set: Literal["all", "variable", "core", "soft_core", "dispensable", "private"] = "all",
     color_by: str | None = None,
 ) -> go.Figure:
     """Plot gene count per sample against a continuous metadata variable.

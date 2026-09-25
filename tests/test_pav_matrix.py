@@ -194,3 +194,116 @@ gene_2,1,1,1
     meta_path = _write_tmp(tmp_path, "meta.csv", META_CSV)
     pm = PavMatrix(pav_path, meta_path)
     assert pm.variable_genes == []
+
+
+# --- Variable gene subcategory fixtures ---
+# 4 samples → presence frequencies: 0, 0.25, 0.5, 0.75, 1.0
+PAV_FREQ_CSV = """\
+,sample_a,sample_b,sample_c,sample_d
+gene_absent,0,0,0,0
+gene_private,1,0,0,0
+gene_dispensable,1,1,0,0
+gene_soft_core,1,1,1,0
+gene_core,1,1,1,1
+"""
+
+META_4_CSV = """\
+,species
+sample_a,human
+sample_b,mouse
+sample_c,human
+sample_d,mouse
+"""
+
+
+def test_default_thresholds(tmp_path):
+    pav_path = _write_tmp(tmp_path, "pav.csv", PAV_FREQ_CSV)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    pm = PavMatrix(pav_path, meta_path)
+    assert pm.thresholds == {"soft_core_min": 0.95, "dispensable_min": 0.15, "private_min": 0.0}
+
+
+def test_custom_thresholds_stored(tmp_path):
+    pav_path = _write_tmp(tmp_path, "pav.csv", PAV_FREQ_CSV)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    pm = PavMatrix(pav_path, meta_path, soft_core_min=0.8, dispensable_min=0.3, private_min=0.1)
+    assert pm.soft_core_min == 0.8
+    assert pm.dispensable_min == 0.3
+    assert pm.private_min == 0.1
+
+
+def test_soft_core_genes(tmp_path):
+    pav_path = _write_tmp(tmp_path, "pav.csv", PAV_FREQ_CSV)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    # With default thresholds: soft_core = freq >= 0.95 and < 1.0
+    # gene_soft_core has freq 0.75 → not soft core with defaults
+    # Use custom thresholds to put gene_soft_core (freq=0.75) in soft core
+    pm = PavMatrix(pav_path, meta_path, soft_core_min=0.7, dispensable_min=0.3, private_min=0.0)
+    assert pm.soft_core_genes == ["gene_soft_core"]
+
+
+def test_dispensable_genes(tmp_path):
+    pav_path = _write_tmp(tmp_path, "pav.csv", PAV_FREQ_CSV)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    # gene_dispensable has freq 0.5, gene_soft_core has freq 0.75
+    # With thresholds 0.7 / 0.3 / 0.0: dispensable = freq >= 0.3 and < 0.7
+    pm = PavMatrix(pav_path, meta_path, soft_core_min=0.7, dispensable_min=0.3, private_min=0.0)
+    assert pm.dispensable_genes == ["gene_dispensable"]
+
+
+def test_private_genes(tmp_path):
+    pav_path = _write_tmp(tmp_path, "pav.csv", PAV_FREQ_CSV)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    # gene_private has freq 0.25; with thresholds 0.7 / 0.3 / 0.0: private = freq > 0.0 and < 0.3
+    pm = PavMatrix(pav_path, meta_path, soft_core_min=0.7, dispensable_min=0.3, private_min=0.0)
+    assert pm.private_genes == ["gene_private"]
+
+
+def test_subcategory_genes_exclude_core_and_absent(tmp_path):
+    pav_path = _write_tmp(tmp_path, "pav.csv", PAV_FREQ_CSV)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    pm = PavMatrix(pav_path, meta_path, soft_core_min=0.7, dispensable_min=0.3, private_min=0.0)
+    for gene_list in [pm.soft_core_genes, pm.dispensable_genes, pm.private_genes]:
+        assert "gene_core" not in gene_list
+        assert "gene_absent" not in gene_list
+
+
+def test_subcategory_genes_return_empty_when_none_in_range(tmp_path):
+    pav_all_core = """\
+,sample_a,sample_b,sample_c,sample_d
+gene_1,1,1,1,1
+gene_2,1,1,1,1
+"""
+    pav_path = _write_tmp(tmp_path, "pav.csv", pav_all_core)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    pm = PavMatrix(pav_path, meta_path)
+    assert pm.soft_core_genes == []
+    assert pm.dispensable_genes == []
+    assert pm.private_genes == []
+
+
+def test_gene_counts_includes_subcategories(tmp_path):
+    pav_path = _write_tmp(tmp_path, "pav.csv", PAV_FREQ_CSV)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    pm = PavMatrix(pav_path, meta_path, soft_core_min=0.7, dispensable_min=0.3, private_min=0.0)
+    counts = pm.gene_counts
+    assert set(counts.keys()) == {"core", "soft_core", "dispensable", "private", "absent"}
+    assert counts["core"] == 1
+    assert counts["soft_core"] == 1
+    assert counts["dispensable"] == 1
+    assert counts["private"] == 1
+    assert counts["absent"] == 1
+
+
+def test_invalid_threshold_out_of_range_raises(tmp_path):
+    pav_path = _write_tmp(tmp_path, "pav.csv", PAV_FREQ_CSV)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    with pytest.raises(ValueError, match="soft_core_min"):
+        PavMatrix(pav_path, meta_path, soft_core_min=1.0)
+
+
+def test_invalid_threshold_ordering_raises(tmp_path):
+    pav_path = _write_tmp(tmp_path, "pav.csv", PAV_FREQ_CSV)
+    meta_path = _write_tmp(tmp_path, "meta.csv", META_4_CSV)
+    with pytest.raises(ValueError, match="private_min < dispensable_min < soft_core_min"):
+        PavMatrix(pav_path, meta_path, soft_core_min=0.5, dispensable_min=0.8, private_min=0.0)

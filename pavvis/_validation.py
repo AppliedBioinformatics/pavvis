@@ -50,6 +50,26 @@ def validate_pav_values(pav: pd.DataFrame) -> None:
         )
 
 
+def validate_subcategory_thresholds(
+    soft_core_min: float,
+    dispensable_min: float,
+    private_min: float,
+) -> None:
+    for name, val in [
+        ("soft_core_min", soft_core_min),
+        ("dispensable_min", dispensable_min),
+        ("private_min", private_min),
+    ]:
+        if not (0.0 <= val < 1.0):
+            raise ValueError(f"'{name}' must be in [0.0, 1.0), got {val}")
+    if not (private_min < dispensable_min < soft_core_min):
+        raise ValueError(
+            f"Thresholds must satisfy private_min < dispensable_min < soft_core_min. "
+            f"Got: private_min={private_min}, dispensable_min={dispensable_min}, "
+            f"soft_core_min={soft_core_min}"
+        )
+
+
 def validate_color_by(
     color_by: str,
     metadata: pd.DataFrame,

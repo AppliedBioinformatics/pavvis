@@ -47,6 +47,35 @@ Pavvis classifies every gene into one of three categories based on its presence 
 | **Variable** | Present in at least one but not all samples |
 | **Absent** | Absent from every sample (`0` across the entire row) |
 
+In PAV analysis, variable genes tend to be of the most interest to researchers. Pavvis classifies variable genes in a 
+PAV matrix as one of three subcategories to make visualisation easier. These values are based on the frequency of 
+gene presence across the entire gene row in the pav matrix. The default values for these subcategories are shown below:
+
+| Variable gene subclass | Default presence frequency |
+|------------------------|----------------------------|
+| **Soft Core**          | >= 0.95 and < 1            |
+| **Dispensable**        | >= 0.15 and < 0.95         |
+| **Private**            | > 0 and < 0.15             |
+
+These defaults are based on common thresholds used throughout pangenomic research papers. We realise that depending on
+the number of samples in the PAV matrix, these thresholds may not be optimal for the user and the defaults can be
+overwritten by following the instructions below when instantiating a new PavMatrix() object.
+
+```python
+from pavvis.pav_matrix import PavMatrix
+
+pm = PavMatrix(matrix_path="./pav.csv", 
+              metadata_path="./metadata.csv",
+              soft_core_min=0.90,
+              dispensable_min=0.20,
+              private_min=0.05)
+
+print(pm.thresholds)
+```
+
+**absent** genes are always defined as all `0` across the PAV matrix.
+**core** genes are always defined as all `1` across the PAV matrix.
+
 ## Why handle PAV matrices as Python class objects?
 
 Pavvis represents a PAV matrix as a `PavMatrix` Python class rather than a loose
