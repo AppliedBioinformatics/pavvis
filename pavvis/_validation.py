@@ -94,7 +94,7 @@ def validate_color_by(
         actual_type = infer_column_type(metadata[color_by])
         if actual_type != expected_type:
             raise ValueError(
-                f"'{color_by}' is a {actual_type} column but this plot requires "
+                f"'{color_by}' is a {actual_type} column but this function requires "
                 f"a {expected_type} column."
             )
 

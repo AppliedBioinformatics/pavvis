@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from pavvis._validation import validate_sample_alignment, validate_pav_values, validate_subcategory_thresholds
@@ -190,6 +191,43 @@ class PavMatrix:
             "private": len(self.private_genes),
             "absent": len(self.absent_genes),
         }
+
+    def exclusive_gene_counts(self, column: str) -> dict[str, int]:
+        """Count exclusive variable genes for each group in a discrete metadata column.
+
+        An exclusive gene is a variable gene present in at least one sample within
+        a group and absent from every sample outside that group.
+
+        Args:
+            column: A discrete metadata column name.
+
+        Returns:
+            Dict mapping each group label to its exclusive gene count, sorted
+            alphabetically by group label.
+
+        Raises:
+            ValueError: If column is not found in metadata.
+        """
+        from pavvis._validation import validate_color_by
+        validate_color_by(column, self.metadata, expected_type="discrete")
+
+        col = self.metadata[column].astype(str)
+        groups = sorted(col.dropna().unique())
+        pav_var = self.pav.loc[self.variable_genes].values  # (genes, samples)
+        sample_ids = list(self.pav.columns)
+        group_masks = {
+            g: np.array([col.loc[s] == g for s in sample_ids])
+            for g in groups
+        }
+
+        result = {}
+        for g in groups:
+            in_group = group_masks[g]
+            out_group = ~in_group
+            present_in = pav_var[:, in_group].any(axis=1)
+            absent_out = (pav_var[:, out_group] == 0).all(axis=1)
+            result[g] = int((present_in & absent_out).sum())
+        return result
 
     @property
     def presence_frequency(self) -> pd.Series:

@@ -76,6 +76,26 @@ print(pm.thresholds)
 **absent** genes are always defined as all `0` across the PAV matrix.
 **core** genes are always defined as all `1` across the PAV matrix.
 
+## Exclusive genes
+
+An **exclusive gene** is defined as a variable gene that is present in at least one sample belonging to a
+specific group whilst bieng completely absent from every sample outside that group. Exclusivity is always
+defined relative to a discrete metadata column (e.g. species, population, treatment).
+
+For a gene to be classified as exclusive to group *G*:
+
+1. It must be present (`1`) in **at least one** sample where `metadata[column] == G`.
+2. It must be absent (`0`) in **every** sample where `metadata[column] != G`.
+
+Core and absent genes are excluded from this analysis by definition — a core gene is present in
+all samples and therefore cannot be exclusive to any group, and an absent gene is present in no
+samples.
+
+Exclusive genes are biologically interesting because they represent gene content that is unique
+to a particular group — for example, genes found only in a specific species, geographic
+population. A high exclusive gene count within a group may indicate lineage-specific gene content relating to processes
+such as adaption to local environments.
+
 ## Why handle PAV matrices as Python class objects?
 
 Pavvis represents a PAV matrix as a `PavMatrix` Python class rather than a loose

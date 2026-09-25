@@ -3,6 +3,7 @@ from pathlib import Path
 from pavvis import PavMatrix
 import pavvis.plots.presence as pp
 import pavvis.plots.curves as pc
+import pavvis.plots.variable_genes as pvg
 
 
 DATA_DIR = Path(__file__).parent / "tests" / "data"
@@ -21,8 +22,12 @@ print(f"Gene counts: {pm.metadata_columns}")
 #                          permutations=100,
 #                          shade_groups=True).show()
 
-pc.jaccard_similarity_curve(pm,
-                            permutations=3,
-                            column="clade",
-                            group_order=["Modern", "AG1", "AG2", "AG3", "AG4", "AG5", "AG6", "AG7"],
-                            shade_groups=True).show()
+#pc.jaccard_similarity_curve(pm,
+#                            permutations=3,
+#                            column="clade",
+#                            group_order=["Modern", "AG1", "AG2", "AG3", "AG4", "AG5", "AG6", "AG7"],
+#                            shade_groups=True).show()
+
+#pvg.frequency_histogram(pm, log_y=True).show()
+#pvg.exclusive_genes_bar(pm, column="clade").show()
+print(pm.exclusive_gene_counts(column="country"))
