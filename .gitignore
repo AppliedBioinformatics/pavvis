@@ -3,4 +3,4 @@ site/
 /.idea/
 /.ai/
 /tests/data/
-/__pycache__/
+*/__pycache__/
