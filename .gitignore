@@ -3,5 +3,4 @@ site/
 /.idea/
 /.ai/
 /tests/data/
-
 *.pyc
