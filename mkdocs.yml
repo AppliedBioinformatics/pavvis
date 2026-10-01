@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_name: Pavvis
 site_description: Visualisation tools for gene Presence/Absence Variation (PAV) matrix data
 
@@ -5,12 +6,31 @@ theme:
   name: material
   palette:
     - scheme: default
-      primary: teal
-      accent: light green
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
   features:
     - navigation.tabs
     - navigation.top
+    - navigation.sections
+    - navigation.indexes
     - content.code.copy
+    - content.code.annotate
+    - toc.follow
+
+extra_css:
+  - statics/extra.css
 
 plugins:
   - search
@@ -29,9 +49,20 @@ nav:
   - Concepts: concepts.md
   - API Reference:
     - PavMatrix: api/pav_matrix.md
-    - plots: api/plots.md
+    - plots:
+      - Presence: api/plots/presence.md
+      - Curves: api/plots/curves.md
+      - Variable Genes: api/plots/variable_genes.md
+      - UMAP: api/plots/umap.md
 
 markdown_extensions:
-  - admonition
-  - pymdownx.highlight
-  - pymdownx.superfences
+    - pymdownx.highlight:
+        anchor_linenums: true
+        line_spans: __span
+        pygments_lang_class: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
+    - pymdownx.snippets
+    - admonition
+    - pymdownx.details

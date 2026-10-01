@@ -28,7 +28,7 @@ print(f"Gene counts: {pm.metadata_columns}")
 #                            group_order=["Modern", "AG1", "AG2", "AG3", "AG4", "AG5", "AG6", "AG7"],
 #                            shade_groups=True).show()
 
-#pvg.frequency_histogram(pm, log_y=True).show()
-#pvg.exclusive_genes_bar(pm, column="clade").show()
+pvg.frequency_histogram(pm, log_y=True).show()
+pvg.exclusive_genes_bar(pm, column="clade").show()
 pum.scatter3d(pm.compute_umap(), color_by="continent").show()
 pum.scatter(pm, color_by="continent").show()

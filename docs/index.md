@@ -8,7 +8,7 @@ associated with all analysis in this Python package.
 
 ## Quick start
 
-```python
+```py title="Getting started with Pavvis." linenums="1"
 from pavvis import PavMatrix
 import pavvis.plots as plots
 

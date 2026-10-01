@@ -21,7 +21,7 @@ Pavvis expects two CSV files:
 - **PAV matrix** — genes as rows, samples as columns, values must be `0` or `1`
 - **Metadata** — samples as rows, any number of metadata columns
 
-```python
+``` py title="Building a PavMatrix object" linenums="1"
 from pavvis import PavMatrix
 
 pm = PavMatrix(
@@ -40,7 +40,7 @@ On loading, Pavvis automatically validates that:
 
 ## Exploring your data
 
-```python
+``` py title="Explore a PavMatrix using basic class attributes" linenums="9"
 # Gene category counts
 print(pm.gene_counts)
 # {'core': 12, 'variable': 28761, 'absent': 5522}
@@ -56,7 +56,7 @@ print(pm.presence_frequency_histogram.describe())
 
 ## First plot
 
-```python
+``` py title="Build histograms to summarise gene presence in your PavMatrix" "linenums="20"
 import pavvis.plots as plots
 
 # Histogram of presence frequencies (log y-axis)

@@ -10,12 +10,11 @@ structures based on the following format:
 
 A gene PAV matrix in Pavvis can be loaded from a CSV file with the following format: 
 
-```
-             sample_a  sample_b  sample_c
-gene_alpha      1         0         1
-gene_beta       1         1         1
-gene_gamma      0         0         1
-```
+|            | sample_a | sample_b | sample_c |
+|------------|----------|----------|----------|
+| gene_alpha |    1     |    0     |    1     |
+| gene_beta  |    1     |    1     |    1     |
+| gene_gamma |    0     |    0     |    1     |
 
 - **Rows** — gene identifiers (must be unique). These can be any stable identifier: UniProt
   IDs, structural annotation IDs, nucleotide sequences, or custom labels.
@@ -28,12 +27,11 @@ origin, growth habit). Its row index must match the PAV matrix column headers ex
 
 For example, a valid metadata CSV for the matrix above:
 
-```
-          population_group  climate  longitude  latitude
-sample_a       GroupA        Temperate   -0.27     51.49
-sample_b       GroupB        Tropical    -99.13    19.42
-sample_c       GroupA        Temperate    4.90     52.37
-```
+|          | population_group | climate   | longitude | latitude |
+|----------|-----------------|-----------|-----------|----------|
+| sample_a | GroupA          | Temperate | -0.27     | 51.49    |
+| sample_b | GroupB          | Tropical  | -99.13    | 19.42    |
+| sample_c | GroupA          | Temperate | 4.90      | 52.37    |
 
 The metadata CSV may contain any number of columns with any mix of discrete or continuous values.
 
@@ -61,7 +59,7 @@ These defaults are based on common thresholds used throughout pangenomic researc
 the number of samples in the PAV matrix, these thresholds may not be optimal for the user and the defaults can be
 overwritten by following the instructions below when instantiating a new PavMatrix() object.
 
-```python
+```py title="Building a PavMatrix object with custom variable gene thresholds.
 from pavvis.pav_matrix import PavMatrix
 
 pm = PavMatrix(matrix_path="./pav.csv", 
@@ -106,3 +104,14 @@ collection of functions. This allows the object to:
   pangenome curves) can be stored on the object after the first calculation
 - **Carry context** — the PAV data and its metadata travel together, reducing the
   chance of mismatched inputs in multistep workflows
+
+## Example data
+
+!!! note "Example data"
+    Throughout this documentation, we provide example data and plots that will allow users to visualise
+    the outputs of the functions they are calling. This is particularly useful for the plotting subpackage, allowing
+    users to see plots rendered for each function, as well as the input parameter values used. For generating these
+    plots, we use a PAV matrix of variable genes that was generated as an outcome of the
+    [Watkins Wheat Pangenome](https://pangenome.wheatgenome.info/) in one of our previous research projects.
+    The metadata file associated with all Watkins wheat samples is derived from research published by
+    [Cheng __et al__. (2024)](https://pubmed.ncbi.nlm.nih.gov/38885696/).
