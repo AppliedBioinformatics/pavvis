@@ -2,22 +2,22 @@
 
 ## Installation
 
-``` bash
-pip install pavvis
-```
+=== "pip"
+    ``` bash
+    pip install pavvis
+    ```
 
-or with uv:
-``` bash
-uv pip install pavvis
-```
+=== "uv"
+    ``` bash
+    uv pip install pavvis
+    ```
 
-For a development install from source:
-
-``` bash
-git clone https://github.com/<your-username>/Pavvis.git
-cd Pavvis
-pip install -e ".[dev]"
-```
+=== "Development"
+    ``` bash
+    git clone https://github.com/<your-username>/Pavvis.git
+    cd Pavvis
+    pip install -e ".[dev]"
+    ```
 
 ## Loading your data
 
@@ -26,9 +26,6 @@ Pavvis workflow.:
 
 - **PAV matrix** — genes as rows, samples as columns, values must be `0` or `1`, i.e a binary matrix.
 - **Metadata** — samples as rows, any number of metadata columns
-
-!!! tip "File formats"
-    For examples of how these files should be formatted, see the [concepts page](concepts.md).
 
 ``` py title="Building a PavMatrix object" linenums="1"
 from pavvis import PavMatrix
@@ -41,6 +38,9 @@ pm = PavMatrix(
 print(pm)
 # PavMatrix(34295 genes × 1039 samples)
 ```
+
+!!! tip "File formats"
+    For examples of how these files should be formatted, see the [concepts page](concepts.md).
 
 When building the `PavMatrix()` class, Pavvis will automatically validate that:
 

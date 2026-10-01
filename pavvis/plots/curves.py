@@ -103,7 +103,7 @@ def legacy_pangenome_curve(
     return fig
 
 
-def pangenome_curve(
+def variable_gene_curve(
     pm: PavMatrix,
     permutations: int = 100,
     log_y: bool = False,

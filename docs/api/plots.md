@@ -10,7 +10,7 @@
 
 ## curves
 
-::: pavvis.plots.curves.pangenome_curve
+::: pavvis.plots.curves.variable_gene_curve
 
 ::: pavvis.plots.curves.grouped_variable_curve
 

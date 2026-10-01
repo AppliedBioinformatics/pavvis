@@ -17,6 +17,9 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
+  icon:
+    logo: material/dna
+  favicon: statics/favicon.svg
   font:
     text: Inter
     code: JetBrains Mono
@@ -31,6 +34,9 @@ theme:
 
 extra_css:
   - statics/extra.css
+
+extra_javascript:
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
 plugins:
   - search
@@ -66,3 +72,7 @@ markdown_extensions:
     - pymdownx.snippets
     - admonition
     - pymdownx.details
+    - pymdownx.tabbed:
+        alternate_style: true
+    - pymdownx.arithmatex:
+        generic: true

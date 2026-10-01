@@ -46,12 +46,12 @@ def _save(fig, name: str) -> None:
 print("Generating presence plots...")
 _save(presence.frequency_histogram(pm), "frequency_histogram")
 _save(presence.per_sample_boxplot(pm, x="continent"), "per_sample_boxplot")
-_save(presence.per_sample_scatter(pm, x="longitude", color_by="clade"), "per_sample_scatter")
+_save(presence.per_sample_scatter(pm, x="depth", color_by="clade"), "per_sample_scatter")
 
 print("Generating curve plots...")
-_save(curves.pangenome_curve(pm, permutations=5), "pangenome_curve")
+_save(curves.variable_gene_curve(pm, permutations=5), "pangenome_curve")
 _save(
-    curves.grouped_variable_curve(pm, column="clade", group_order=GROUP_ORDER, permutations=5),
+    curves.grouped_variable_curve(pm, column="clade", group_order=GROUP_ORDER, permutations=5, shade_groups=True),
     "grouped_variable_curve",
 )
 _save(

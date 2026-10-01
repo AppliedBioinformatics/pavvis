@@ -82,7 +82,7 @@ presence.per_sample_scatter(pm, x="latitude", color_by="species").show()
 from pavvis.plots import curves
 
 # Core & variable gene accumulation curves
-curves.pangenome_curve(pm, permutations=100).show()
+curves.variable_gene_curve(pm, permutations=100).show()
 
 # Variable gene accumulation grouped by metadata, in a defined order
 curves.grouped_variable_curve(
