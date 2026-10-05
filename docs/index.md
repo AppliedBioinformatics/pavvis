@@ -1,14 +1,14 @@
-# Pavvis
+<img src="statics/banner.jpg" alt="pavvis" class="pavvis-banner" />
 
-**Pavvis** is a Python package for analysing and visualising gene Presence/Absence Variation (PAV) data from pangenome studies.
+**pavvis** is a Python package for analysing and visualising gene Presence/Absence Variation (PAV) data from pangenome studies.
 
-Pavvis was designed to be easy to use and optimised for large-scale genomic datasets. To get the best use out of this
-Python package, we reccommend reading through our [concepts](concepts.md) page, that will help you to understand the data structures
+pavvis was designed to be easy to use and optimised for large-scale genomic datasets. To get the best use out of this
+Python package, we recommend reading through our [concepts](concepts.md) page, that will help you to understand the data structures
 associated with all analysis in this Python package.
 
 ## Quick start
 
-```py title="Getting started with Pavvis." linenums="1"
+```py title="Getting started with pavvis." linenums="1"
 from pavvis import PavMatrix
 import pavvis.plots as plots
 

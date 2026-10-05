@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
-site_name: Pavvis
+site_name: pavvis
 site_description: Visualisation tools for gene Presence/Absence Variation (PAV) matrix data
 
 theme:
@@ -17,9 +17,8 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
-  icon:
-    logo: material/dna
-  favicon: statics/favicon.png
+  logo: statics/logo.png
+  favicon: statics/logo.png
   font:
     text: Inter
     code: JetBrains Mono

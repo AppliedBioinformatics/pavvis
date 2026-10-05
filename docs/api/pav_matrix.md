@@ -7,7 +7,7 @@
 ---
 
 ## Constructor
-The `PavMatrix()` class is the core data structure behind Pavvis. By default, all that is required to generate it is
+The `PavMatrix()` class is the core data structure behind pavvis. By default, all that is required to generate it is
 a pav.csv and accompanying metadata.csv file. 
 
 !!! tip "File formats"

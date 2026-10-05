@@ -14,15 +14,15 @@
 
 === "Development"
     ``` bash
-    git clone https://github.com/<your-username>/Pavvis.git
-    cd Pavvis
+    git clone https://github.com/<your-username>/pavvis.git
+    cd pavvis
     pip install -e ".[dev]"
     ```
 
 ## Loading your data
 
-Pavvis requires two CSV files to generate a `PavMatrix` object. The `PavMatrix` class is central to the
-Pavvis workflow.:
+pavvis requires two CSV files to generate a `PavMatrix` object. The `PavMatrix` class is central to the
+pavvis workflow.:
 
 - **PAV matrix** — genes as rows, samples as columns, values must be `0` or `1`, i.e a binary matrix.
 - **Metadata** — samples as rows, any number of metadata columns
@@ -42,7 +42,7 @@ print(pm)
 !!! tip "File formats"
     For examples of how these files should be formatted, see the [concepts page](concepts.md).
 
-When building the `PavMatrix()` class, Pavvis will automatically validate that:
+When building the `PavMatrix()` class, pavvis will automatically validate that:
 
 - Both files exist on the system
 - Sample IDs of the PAV matrix columns match the metadata row indexes
@@ -67,7 +67,7 @@ print(pm.exclusive_gene_counts("population_group"))
 ```
 
 ## First plot
-Aside from allowing the user to easily group and summarise their data, the Pavvis package also provides functions that
+Aside from allowing the user to easily group and summarise their data, the pavvis package also provides functions that
 allow the user to generate plots for thier data. All of these functions are contained in the `plots` module.
 
 ``` py title="Build histograms to summarise gene presence in your PavMatrix" "linenums="20"

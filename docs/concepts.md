@@ -5,10 +5,10 @@
 A **Presence/Absence variation (PAV) matrix** is a binary matrix commonly used in pangenome analysis
 to represent whether a gene is present (`1`) or absent (`0`) across a population, often across thousands of genes.
 
-This information can be stored in a number of different ways; however, Pavvis standardises the input data
+This information can be stored in a number of different ways; however, pavvis standardises the input data
 structures based on the following format:
 
-A gene PAV matrix in Pavvis can be loaded from a CSV file with the following format: 
+A gene PAV matrix in pavvis can be loaded from a CSV file with the following format: 
 
 |            | sample_a | sample_b | sample_c |
 |------------|----------|----------|----------|
@@ -22,7 +22,7 @@ A gene PAV matrix in Pavvis can be loaded from a CSV file with the following for
 - **Values** — strictly `0` (absent) or `1` (present).
 
 ## PAV and associations with sample metadata
-Pavvis is designed to integrate gene PAV analysis with sample level metadata. To do this, Pavvis requires the user
+pavvis is designed to integrate gene PAV analysis with sample level metadata. To do this, pavvis requires the user
 to supply a separate metadata.csv. This enables plots and summary statistics to be generated for both discrete and 
 continuous variables. 
 
@@ -45,7 +45,7 @@ The metadata CSV may contain any number of columns with any mix of discrete or c
 
 ## Gene categories
 Pangenomic studies often define gene sets based on their presence or absence across the whole population.
-Pavvis classifies every gene into one of three categories based on its presence pattern across all samples in the matrix:
+pavvis classifies every gene into one of three categories based on its presence pattern across all samples in the matrix:
 
 | Category | Definition |
 |----------|------------|
@@ -54,7 +54,7 @@ Pavvis classifies every gene into one of three categories based on its presence 
 | **Absent** | Absent from every sample (`0` across the entire row) |
 
 ### Variable genes
-In PAV analysis, variable genes tend to be of the most interest to researchers. Pavvis classifies variable genes in a 
+In PAV analysis, variable genes tend to be of the most interest to researchers. pavvis classifies variable genes in a 
 PAV matrix as one of three subcategories to add more depth to matrix analysis. These values are based on the relative
 frequency of each genes presence across the entire gene row in the pav matrix. The default values for these three
 subcategories are shown below:
@@ -83,7 +83,7 @@ print(pm.thresholds)
 ```
 
 ### Absent and core genes
-In addition to variable genes, Pavvis also defines two other types of gene:
+In addition to variable genes, pavvis also defines two other types of gene:
 
 - **absent** genes are always defined as all `0` across the PAV matrix.
 - **core** genes are always defined as all `1` across the PAV matrix.
@@ -112,7 +112,7 @@ such as adaption to local environments.
 
 ## Why handle PAV matrices as Python class objects?
 
-Pavvis represents a PAV matrix as a `PavMatrix` Python class rather than a loose
+pavvis represents a PAV matrix as a `PavMatrix` Python class rather than a loose
 collection of functions. This allows the object to:
 
 - **Validate on load** — bad inputs are caught immediately, not silently propagated.
