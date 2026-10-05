@@ -143,7 +143,10 @@ umap.scatter3d(pm, color_by="species", depth=True).show()  # 3D with depth scali
 
 ## Documentation
 
-Full documentation including concepts, API reference, and getting-started guide is available at the project docs site. To run it locally:
+Full documentation including concepts, API reference, and getting-started guide is available at the project docs site 
+at GitHub Pages (see sidebar).
+
+To run the docs locally:
 
 ```bash
 mkdocs serve
