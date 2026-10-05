@@ -1,10 +1,8 @@
 <p align="center">
-  <img src="docs/statics/banner.jpg" alt="Pavvis — Python Gene PAV Matrix Analysis & Visualization" width="800"/>
+  <img src="docs/statics/banner.jpg" alt="pavvis — Python Gene PAV Matrix Analysis & Visualization" width="800"/>
 </p>
 
-# Pavvis
-
-**Pavvis** is a Python package for analysing and visualising gene Presence/Absence Variation (PAV) data from pangenome studies. It is designed to be easy to use and optimised for large-scale genomic datasets.
+**pavvis** is a Python package for analysing and visualising gene Presence/Absence Variation (PAV) data from pangenome studies. It is designed to be easy to use and optimised for large-scale genomic datasets.
 
 ## Installation
 
@@ -35,7 +33,7 @@ print(pm)
 
 ## Gene categories
 
-Pavvis classifies every gene into categories based on its presence pattern across all samples:
+pavvis classifies every gene into categories based on its presence pattern across all samples:
 
 | Category | Definition |
 |---|---|
@@ -113,6 +111,24 @@ print(pm.exclusive_gene_counts("species"))
 # {'Human': 42, 'Mouse': 17, 'Rat': 3}
 ```
 
+### Heatmaps
+
+```python
+from pavvis.plots import heatmap
+
+# Compute pairwise Jaccard similarity matrix (cached on the object)
+pm.compute_jaccard()
+
+# Binary PAV matrix heatmap with sample clustering and metadata annotation
+heatmap.pav_heatmap(pm, gene_set="variable", col_cluster=True, color_by="species").show()
+
+# Sample × sample Jaccard similarity heatmap
+heatmap.sample_similarity_heatmap(pm, color_by="species", cluster=True).show()
+
+# Gene × gene co-occurrence heatmap
+heatmap.gene_cooccurrence_heatmap(pm, gene_set="dispensable").show()
+```
+
 ### UMAP embedding
 
 ```python
@@ -124,6 +140,7 @@ pm.compute_umap(n_neighbors=15, min_dist=0.1, random_state=42)
 umap.scatter(pm, color_by="species").show()      # 2D, discrete colour
 umap.scatter(pm, color_by="latitude").show()     # 2D, continuous Viridis
 umap.scatter3d(pm, color_by="species").show()    # 3D
+umap.scatter3d(pm, color_by="species", depth=True).show()  # 3D with depth scaling
 ```
 
 ## Documentation
