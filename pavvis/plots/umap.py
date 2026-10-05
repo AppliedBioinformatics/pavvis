@@ -97,9 +97,24 @@ def scatter(
     return fig
 
 
+def _depth_sizes(
+    z: list[float],
+    size_min: float = 2.0,
+    size_max: float = 8.0,
+) -> list[float]:
+    """Map UMAP3 values linearly onto [size_min, size_max]."""
+    import numpy as np
+    arr = np.array(z, dtype=float)
+    lo, hi = arr.min(), arr.max()
+    if hi == lo:
+        return [((size_min + size_max) / 2)] * len(z)
+    return ((arr - lo) / (hi - lo) * (size_max - size_min) + size_min).tolist()
+
+
 def scatter3d(
     pm: PavMatrix,
     color_by: str | None = None,
+    depth: bool = False,
 ) -> go.Figure:
     """Plot the UMAP embedding of samples as a 3D scatter plot.
 
@@ -110,6 +125,9 @@ def scatter3d(
         pm: A PavMatrix instance with a cached embedding (call pm.compute_umap() first).
         color_by: An optional metadata column name to colour points by.
             Accepts both discrete and continuous columns. Defaults to None.
+        depth: If True, scale each point's size by its UMAP3 (z) coordinate so
+            that points with a higher z value appear larger, giving a visual
+            depth cue. Defaults to False.
 
     Returns:
         A Plotly Figure. Call .show() to display or .write_html() to export.
@@ -128,11 +146,17 @@ def scatter3d(
     z = emb["UMAP3"].tolist()
     samples = emb.index.tolist()
 
+    def _sizes(mask=None) -> list[float] | float:
+        if not depth:
+            return 4
+        z_sub = [z[i] for i, m in enumerate(mask) if m] if mask is not None else z
+        return _depth_sizes(z_sub)
+
     if color_by is None:
         traces = [go.Scatter3d(
             x=x, y=y, z=z, text=samples, mode="markers",
             name="Samples",
-            marker=dict(color="#2a9d8f", size=4),
+            marker=dict(color="#2a9d8f", size=_sizes()),
             hovertemplate="%{text}<extra></extra>",
         )]
 
@@ -141,15 +165,16 @@ def scatter3d(
         categories = sorted(col.dropna().unique())
         traces = []
         for cat in categories:
-            mask = col == cat
-            cat_samples = emb.index[mask].tolist()
+            bool_mask = col == cat
+            mask = bool_mask.tolist()
+            cat_emb = emb.loc[bool_mask]
             traces.append(go.Scatter3d(
-                x=emb.loc[mask, "UMAP1"].tolist(),
-                y=emb.loc[mask, "UMAP2"].tolist(),
-                z=emb.loc[mask, "UMAP3"].tolist(),
-                text=cat_samples,
+                x=cat_emb["UMAP1"].tolist(),
+                y=cat_emb["UMAP2"].tolist(),
+                z=cat_emb["UMAP3"].tolist(),
+                text=cat_emb.index.tolist(),
                 mode="markers", name=cat,
-                marker=dict(size=4),
+                marker=dict(size=_sizes(mask)),
                 hovertemplate=f"{color_by}: {cat}<br>%{{text}}<extra></extra>",
             ))
 
@@ -159,7 +184,7 @@ def scatter3d(
             x=x, y=y, z=z, text=samples, mode="markers",
             name=color_by,
             marker=dict(
-                color=color_vals, colorscale="Viridis", size=4,
+                color=color_vals, colorscale="Viridis", size=_sizes(),
                 colorbar=dict(title=color_by), showscale=True,
             ),
             hovertemplate=f"{color_by}: %{{marker.color:.3g}}<br>%{{text}}<extra></extra>",
