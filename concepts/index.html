@@ -1,0 +1,1264 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Visualisation tools for gene Presence/Absence Variation (PAV) matrix data">
+      
+      
+      
+        <link rel="canonical" href="https://appliedbioinformatics.github.io/pavvis/concepts/">
+      
+      
+        <link rel="prev" href="../getting-started/">
+      
+      
+        <link rel="next" href="../api/pav_matrix/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../statics/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Concepts - pavvis</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../statics/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#concepts" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="pavvis" class="md-header__button md-logo" aria-label="pavvis" data-md-component="logo">
+      
+  <img src="../statics/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pavvis
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Concepts
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Concepts
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/pav_matrix/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="pavvis" class="md-nav__button md-logo" aria-label="pavvis" data-md-component="logo">
+      
+  <img src="../statics/logo.png" alt="logo">
+
+    </a>
+    pavvis
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-a-pav-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is a PAV matrix?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pav-and-associations-with-sample-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PAV and associations with sample metadata
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PAV and associations with sample metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-metadatacsv-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The metadata.csv file
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gene-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gene categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gene categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variable-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Variable genes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#absent-and-core-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Absent and core genes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exclusive-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exclusive genes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-handle-pav-matrices-as-python-class-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why handle PAV matrices as Python class objects?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pav_matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PavMatrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    plots
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    plots
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/plots/presence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Presence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/plots/curves/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Curves
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/plots/variable_genes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variable Genes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/plots/umap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UMAP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/plots/heatmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Heatmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-a-pav-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is a PAV matrix?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pav-and-associations-with-sample-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PAV and associations with sample metadata
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PAV and associations with sample metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-metadatacsv-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The metadata.csv file
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gene-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gene categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gene categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variable-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Variable genes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#absent-and-core-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Absent and core genes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exclusive-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exclusive genes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-handle-pav-matrices-as-python-class-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why handle PAV matrices as Python class objects?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="concepts">Concepts</h1>
+<h2 id="what-is-a-pav-matrix">What is a PAV matrix?</h2>
+<p>A <strong>Presence/Absence variation (PAV) matrix</strong> is a binary matrix commonly used in pangenome analysis
+to represent whether a gene is present (<code>1</code>) or absent (<code>0</code>) across a population, often across thousands of genes.</p>
+<p>This information can be stored in a number of different ways; however, pavvis standardises the input data
+structures based on the following format:</p>
+<p>A gene PAV matrix in pavvis can be loaded from a CSV file with the following format: </p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>sample_a</th>
+<th>sample_b</th>
+<th>sample_c</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gene_alpha</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>gene_beta</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>gene_gamma</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Rows</strong> — gene identifiers (must be unique). These can be any stable identifier: UniProt
+  IDs, structural annotation IDs, nucleotide sequences, or custom labels.</li>
+<li><strong>Columns</strong> — sample/accession identifiers (must be unique).</li>
+<li><strong>Values</strong> — strictly <code>0</code> (absent) or <code>1</code> (present).</li>
+</ul>
+<h2 id="pav-and-associations-with-sample-metadata">PAV and associations with sample metadata</h2>
+<p>pavvis is designed to integrate gene PAV analysis with sample level metadata. To do this, pavvis requires the user
+to supply a separate metadata.csv. This enables plots and summary statistics to be generated for both discrete and 
+continuous variables. </p>
+<p>In this context, common sample metadata may include columns such as <code>population_group</code>, <code>ancestral_group</code>, or
+<code>longitude</code>/<code>latitude</code>.</p>
+<h3 id="the-metadatacsv-file">The metadata.csv file</h3>
+<p>A separate <strong>metadata CSV</strong> file provides sample-level annotations (e.g. species, country of
+origin, growth habit). Its row index must match the PAV matrix column headers exactly.</p>
+<p>For example, a valid metadata CSV for the matrix above:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>population_group</th>
+<th>climate</th>
+<th>longitude</th>
+<th>latitude</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sample_a</td>
+<td>GroupA</td>
+<td>Temperate</td>
+<td>-0.27</td>
+<td>51.49</td>
+</tr>
+<tr>
+<td>sample_b</td>
+<td>GroupB</td>
+<td>Tropical</td>
+<td>-99.13</td>
+<td>19.42</td>
+</tr>
+<tr>
+<td>sample_c</td>
+<td>GroupA</td>
+<td>Temperate</td>
+<td>4.90</td>
+<td>52.37</td>
+</tr>
+</tbody>
+</table>
+<p>The metadata CSV may contain any number of columns with any mix of discrete or continuous values.</p>
+<h2 id="gene-categories">Gene categories</h2>
+<p>Pangenomic studies often define gene sets based on their presence or absence across the whole population.
+pavvis classifies every gene into one of three categories based on its presence pattern across all samples in the matrix:</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Core</strong></td>
+<td>Present in every sample (<code>1</code> across the entire row)</td>
+</tr>
+<tr>
+<td><strong>Variable</strong></td>
+<td>Present in at least one but not all samples</td>
+</tr>
+<tr>
+<td><strong>Absent</strong></td>
+<td>Absent from every sample (<code>0</code> across the entire row)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="variable-genes">Variable genes</h3>
+<p>In PAV analysis, variable genes tend to be of the most interest to researchers. pavvis classifies variable genes in a 
+PAV matrix as one of three subcategories to add more depth to matrix analysis. These values are based on the relative
+frequency of each genes presence across the entire gene row in the pav matrix. The default values for these three
+subcategories are shown below:</p>
+<table>
+<thead>
+<tr>
+<th>Variable gene subclass</th>
+<th>Default presence frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Soft Core</strong></td>
+<td>&gt;= 0.95 and &lt; 1</td>
+</tr>
+<tr>
+<td><strong>Dispensable</strong></td>
+<td>&gt;= 0.15 and &lt; 0.95</td>
+</tr>
+<tr>
+<td><strong>Private</strong></td>
+<td>&gt; 0 and &lt; 0.15</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Customising thresholds</p>
+<p>These defaults are based on common thresholds used throughout pangenomic research papers. Depending on
+the number of samples in the PAV matrix, these thresholds may not be optimal — they can be
+overwritten when instantiating a new <code>PavMatrix()</code> object as shown below:</p>
+</div>
+<div class="language-py highlight"><span class="filename">Building a PavMatrix object with custom variable gene thresholds</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pavvis.pav_matrix</span><span class="w"> </span><span class="kn">import</span> <span class="n">PavMatrix</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">pm</span> <span class="o">=</span> <span class="n">PavMatrix</span><span class="p">(</span><span class="n">matrix_path</span><span class="o">=</span><span class="s2">"./pav.csv"</span><span class="p">,</span> 
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>              <span class="n">metadata_path</span><span class="o">=</span><span class="s2">"./metadata.csv"</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>              <span class="n">soft_core_min</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>              <span class="n">dispensable_min</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>              <span class="n">private_min</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">pm</span><span class="o">.</span><span class="n">thresholds</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="absent-and-core-genes">Absent and core genes</h3>
+<p>In addition to variable genes, pavvis also defines two other types of gene:</p>
+<ul>
+<li><strong>absent</strong> genes are always defined as all <code>0</code> across the PAV matrix.</li>
+<li><strong>core</strong> genes are always defined as all <code>1</code> across the PAV matrix.</li>
+</ul>
+<p>The default value for these gene categories cannot be changed.</p>
+<h3 id="exclusive-genes">Exclusive genes</h3>
+<p>An <strong>exclusive gene</strong> is defined as a variable gene that is present in at least one sample belonging to a
+specific group whilst bieng completely absent from every sample outside that group. Exclusivity is always
+defined relative to a discrete metadata column (e.g. species, population, treatment).</p>
+<p>For a gene to be classified as exclusive to group <em>G</em>:</p>
+<ol>
+<li>It must be present (<code>1</code>) in <strong>at least one</strong> sample where <code>metadata[column] == G</code>.</li>
+<li>It must be absent (<code>0</code>) in <strong>every</strong> sample where <code>metadata[column] != G</code>.</li>
+</ol>
+<p>Core and absent genes are excluded from this analysis by definition — a core gene is present in
+all samples and therefore cannot be exclusive to any group, and an absent gene is present in no
+samples.</p>
+<p>Exclusive genes are biologically interesting because they represent gene content that is unique
+to a particular group — for example, genes found only in a specific species, geographic
+population. A high exclusive gene count within a group may indicate lineage-specific gene content relating to processes
+such as adaption to local environments.</p>
+<h2 id="why-handle-pav-matrices-as-python-class-objects">Why handle PAV matrices as Python class objects?</h2>
+<p>pavvis represents a PAV matrix as a <code>PavMatrix</code> Python class rather than a loose
+collection of functions. This allows the object to:</p>
+<ul>
+<li><strong>Validate on load</strong> — bad inputs are caught immediately, not silently propagated.</li>
+<li><strong>Cache derived values</strong> — computationally expensive results (i.e. UMAP embeddings,
+  pangenome curves, calculated jaccard distances) can be stored on the object after the first calculation and utilised 
+  by multiple different plotting functions.</li>
+<li><strong>Carry context</strong> — the PAV data and its metadata always travel together, reducing the
+  chance of mismatched inputs in multistep workflows.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Example data</p>
+<p>Throughout this documentation, we provide example data and plots that will allow users to visualise
+the outputs of the functions they are calling. This is particularly useful for the plotting subpackage, allowing
+users to see plots rendered for each function, as well as the input parameter values used. For generating these
+plots, we use a PAV matrix of variable genes that was generated as an outcome of the
+<a href="https://pangenome.wheatgenome.info/">Watkins Wheat Pangenome</a> in one of our previous research projects.
+The metadata file associated with all Watkins wheat samples is derived from research published by
+<a href="https://pubmed.ncbi.nlm.nih.gov/38885696/">Cheng <strong>et al</strong>. (2024)</a>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "navigation.sections", "navigation.indexes", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
