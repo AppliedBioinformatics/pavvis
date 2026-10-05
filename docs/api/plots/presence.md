@@ -52,7 +52,7 @@ presence.frequency_histogram(pm).show()
 
 ---
 
-## Total presence and discrete metadata
+## Total presence and sample groups
 
 ### Description
 

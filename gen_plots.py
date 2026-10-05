@@ -5,6 +5,11 @@ data or plotting functions change:
 
     python gen_plots.py
 
+By default only plots whose output file does not yet exist are generated.
+Pass --reset to regenerate all plots regardless:
+
+    python gen_plots.py --reset
+
 Output files land in docs/statics/plots/ and are inlined by the docs
 pages via the pymdownx.snippets extension.
 """
@@ -23,6 +28,8 @@ DATA_DIR = Path("tests/data")
 OUT_DIR = Path("docs/statics/plots")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
+reset = "--reset" in sys.argv
+
 pm = PavMatrix(
     matrix_path=DATA_DIR / "pav.csv",
     metadata_path=DATA_DIR / "metadata.csv",
@@ -33,12 +40,15 @@ GROUP_ORDER = ["Modern", "AG6", "AG5", "AG3", "AG2", "AG7", "AG4", "AG1"]
 
 
 def _save(fig, name: str) -> None:
+    out = OUT_DIR / f"{name}.html"
+    if not reset and out.exists():
+        print(f"  skipped {out} (already exists)")
+        return
     html = fig.to_html(
         full_html=False,
         include_plotlyjs="cdn",
         config={"responsive": True},
     )
-    out = OUT_DIR / f"{name}.html"
     out.write_text(html, encoding="utf-8")
     print(f"  wrote {out}")
 
@@ -49,7 +59,8 @@ _save(presence.per_sample_boxplot(pm, x="continent"), "per_sample_boxplot")
 _save(presence.per_sample_scatter(pm, x="depth", color_by="clade"), "per_sample_scatter")
 
 print("Generating curve plots...")
-_save(curves.variable_gene_curve(pm, permutations=5), "pangenome_curve")
+_save(curves.legacy_pangenome_curve(pm, permutations=5), "legacy_pangenome_curve")
+_save(curves.variable_gene_curve(pm, permutations=5), "variable_gene_curve")
 _save(
     curves.grouped_variable_curve(pm, column="clade", group_order=GROUP_ORDER, permutations=5, shade_groups=True),
     "grouped_variable_curve",
