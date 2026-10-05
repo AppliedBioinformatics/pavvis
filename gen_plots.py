@@ -23,6 +23,7 @@ from pavvis import PavMatrix
 import pavvis.plots.presence as presence
 import pavvis.plots.curves as curves
 import pavvis.plots.variable_genes as vg
+import pavvis.plots.heatmap as heatmap
 
 DATA_DIR = Path("tests/data")
 OUT_DIR = Path("docs/statics/plots")
@@ -73,6 +74,24 @@ _save(
 print("Generating variable gene plots...")
 _save(vg.frequency_histogram(pm, log_y=True), "vg_frequency_histogram")
 _save(vg.exclusive_genes_bar(pm, column="clade"), "exclusive_genes_bar")
+
+print("Generating heatmap plots...")
+# Sample 6 samples per clade (48 total) for readable demo plots that represent all groups.
+samples_per_clade = (
+    pm.metadata.groupby("clade", sort=True)
+    .apply(lambda g: g.index[:6].tolist())
+    .explode()
+    .tolist()
+)
+var_genes_hm = [g for g in pm.variable_genes if 0 < pm.pav.loc[g, samples_per_clade].sum() < len(samples_per_clade)][:500]
+pm_hm = PavMatrix._from_dataframes(
+    pav=pm.pav.loc[var_genes_hm, samples_per_clade],
+    metadata=pm.metadata.loc[samples_per_clade],
+)
+pm_hm.compute_jaccard()
+_save(heatmap.pav_heatmap(pm_hm, col_cluster=True, color_by="clade"), "pav_heatmap")
+_save(heatmap.gene_cooccurrence_heatmap(pm_hm, gene_set="variable"), "gene_cooccurrence_heatmap")
+_save(heatmap.sample_similarity_heatmap(pm_hm, color_by="clade", cluster=True), "sample_similarity_heatmap")
 
 print("Generating UMAP plots...")
 pm.compute_umap()

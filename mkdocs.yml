@@ -19,7 +19,7 @@ theme:
         name: Switch to light mode
   icon:
     logo: material/dna
-  favicon: statics/favicon.svg
+  favicon: statics/favicon.png
   font:
     text: Inter
     code: JetBrains Mono
@@ -60,6 +60,7 @@ nav:
       - Curves: api/plots/curves.md
       - Variable Genes: api/plots/variable_genes.md
       - UMAP: api/plots/umap.md
+      - Heatmap: api/plots/heatmap.md
 
 markdown_extensions:
     - pymdownx.highlight:

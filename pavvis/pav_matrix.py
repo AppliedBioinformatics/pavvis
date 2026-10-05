@@ -70,6 +70,32 @@ class PavMatrix:
 
         self._umap_embedding: pd.DataFrame | None = None
         self._umap_params: tuple | None = None
+        self._jaccard_matrix: pd.DataFrame | None = None
+
+    @classmethod
+    def _from_dataframes(
+        cls,
+        pav: pd.DataFrame,
+        metadata: pd.DataFrame,
+        soft_core_min: float = 0.95,
+        dispensable_min: float = 0.15,
+        private_min: float = 0.0,
+    ) -> PavMatrix:
+        """Construct a PavMatrix directly from DataFrames, skipping file I/O.
+
+        Intended for internal use (e.g. creating subsets for demo plots). The
+        caller is responsible for ensuring the DataFrames are already valid.
+        """
+        obj = cls.__new__(cls)
+        obj.pav = pav
+        obj.metadata = metadata
+        obj.soft_core_min = soft_core_min
+        obj.dispensable_min = dispensable_min
+        obj.private_min = private_min
+        obj._umap_embedding = None
+        obj._umap_params = None
+        obj._jaccard_matrix = None
+        return obj
 
     # Built ins.
     def __repr__(self) -> str:
@@ -240,6 +266,31 @@ class PavMatrix:
             coords, index=self.pav.columns, columns=["UMAP1", "UMAP2", "UMAP3"]
         )
         self._umap_params = params
+        return self
+
+    def compute_jaccard(self) -> PavMatrix:
+        """Compute the pairwise Jaccard similarity matrix for all samples and cache it.
+
+        Jaccard similarity between two samples is the number of genes present in both
+        divided by the number of genes present in either, ignoring shared absences.
+        The result is an N×N symmetric DataFrame (samples × samples) with values in
+        [0, 1]. Re-calling returns the cached result immediately.
+
+        Returns:
+            self, so calls can be chained: pm.compute_jaccard().plot...
+        """
+        if self._jaccard_matrix is not None:
+            return self
+
+        pav = self.pav.values.astype(np.float64)  # (genes, samples)
+        intersection = pav.T @ pav                  # (samples, samples)
+        row_sums = pav.sum(axis=0)                  # (samples,)
+        union = row_sums[:, None] + row_sums[None, :] - intersection
+        with np.errstate(invalid="ignore"):
+            similarity = np.where(union == 0, 0.0, intersection / union)
+        self._jaccard_matrix = pd.DataFrame(
+            similarity, index=self.pav.columns, columns=self.pav.columns,
+        )
         return self
 
     def exclusive_gene_counts(self, column: str) -> dict[str, int]:
