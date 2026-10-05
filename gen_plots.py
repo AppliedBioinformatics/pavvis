@@ -90,7 +90,6 @@ pm_hm = PavMatrix._from_dataframes(
 )
 pm_hm.compute_jaccard()
 _save(heatmap.pav_heatmap(pm_hm, col_cluster=True, color_by="clade"), "pav_heatmap")
-_save(heatmap.gene_cooccurrence_heatmap(pm_hm, gene_set="variable"), "gene_cooccurrence_heatmap")
 _save(heatmap.sample_similarity_heatmap(pm_hm, color_by="clade", cluster=True), "sample_similarity_heatmap")
 
 print("Generating UMAP plots...")

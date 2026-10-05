@@ -10,13 +10,20 @@ structure, co-occurrence patterns, and the degree of genomic similarity across t
 
 ### Description
 
-Renders the raw PAV matrix as a binary heatmap, with genes on the rows and samples on the columns. Each cell is
+Renders the raw PAV matrix as a binary heatmap, with genes as rows and samples as columns. Each cell is
 coloured white (absent, 0) or navy (present, 1). Because large PAV matrices can contain tens of thousands of genes,
 the `gene_set` parameter (default `'variable'`) should be used to restrict the display to a biologically meaningful
 subset.
 
+Heatmaps can be noisy, and we recommend first spending time filtering the PAV matrix to reduce genes and samples to
+increase the space available to render genes and samples of interest.
+
+!!! info "Planned functionality"
+    We plan to extend pavvis with functions for automatic matrix filtering, such as pruning genes based on their
+    degree of presence across the matrix, to make heatmap generation more streamlined for large datasets.
+
 Sample columns can optionally be reordered by hierarchical clustering on Jaccard distance (`col_cluster=True`), which
-groups together samples with similar PAV profiles. A colour-coded annotation strip can be added above the columns to
+groups together samples with more similar PAV profiles. A colour-coded annotation strip can be added above the columns to
 label each sample by a discrete metadata variable, making it easy to assess whether clustering aligns with known
 biological groupings.
 
@@ -53,54 +60,6 @@ heatmap.pav_heatmap(pm, gene_set="variable", col_cluster=True, color_by="clade")
 
 ---
 
-## Gene co-occurrence heatmap
-
-### Description
-
-Plots a symmetric gene × gene co-occurrence matrix as a heatmap. Each cell $(i, j)$ shows the fraction of samples
-in which both gene $i$ and gene $j$ are present simultaneously:
-
-$$
-\text{co-occurrence}(g_i, g_j) = \frac{\sum_s \mathbf{1}[x_{g_i,s}=1 \wedge x_{g_j,s}=1]}{N_{\text{samples}}}
-$$
-
-The diagonal equals each gene's individual presence frequency. High off-diagonal values indicate gene pairs that
-tend to be gained or lost together across samples, which may reflect shared functional roles, co-localisation on
-mobile genetic elements, or co-regulation.
-
-!!! warning "Memory scaling"
-    This plot requires O(genes²) memory and scales quadratically with the number of genes. It is practical for up to
-    approximately 5 000 genes. For larger datasets, use `gene_set='soft_core'` or `gene_set='dispensable'` to limit
-    the scope of the analysis.
-
-### Function
-
-::: pavvis.plots.heatmap.gene_cooccurrence_heatmap
-
-### Example
-
-``` py
-from pavvis import PavMatrix
-import pavvis.plots.heatmap as heatmap
-
-pm = PavMatrix(
-    matrix_path="path/to/pav.csv",
-    metadata_path="path/to/metadata.csv",
-)
-
-heatmap.gene_cooccurrence_heatmap(pm, gene_set="variable").show()
-```
-
---8<-- "docs/statics/plots/gene_cooccurrence_heatmap.html"
-
-!!! note "Interpretation"
-    Blocks of high co-occurrence values along the diagonal indicate sets of genes that are frequently present
-    together. These gene clusters may share a common origin (e.g. horizontal gene transfer events) or functional
-    pathway. Low co-occurrence values between two genes that are individually common may suggest they are
-    mutually exclusive across samples, which can indicate functional redundancy or competitive exclusion.
-
----
-
 ## Sample similarity heatmap
 
 ### Description
@@ -111,7 +70,7 @@ genes that are present in at least one of the two samples, ignoring shared absen
 
 Samples can be reordered by hierarchical clustering (`cluster=True`, the default) to group together the most
 similar samples. An optional annotation strip on both axes labels each sample by a discrete metadata column,
-making it straightforward to assess whether biological groupings correspond to genomic similarity.
+making it straightforward to assess whether biological grouping corresponds to genomic similarity in the PAV matrix.
 
 !!! note "Prerequisites"
     This function requires `pm.compute_jaccard()` to have been called first. See the

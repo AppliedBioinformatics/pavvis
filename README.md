@@ -125,8 +125,6 @@ heatmap.pav_heatmap(pm, gene_set="variable", col_cluster=True, color_by="species
 # Sample × sample Jaccard similarity heatmap
 heatmap.sample_similarity_heatmap(pm, color_by="species", cluster=True).show()
 
-# Gene × gene co-occurrence heatmap
-heatmap.gene_cooccurrence_heatmap(pm, gene_set="dispensable").show()
 ```
 
 ### UMAP embedding

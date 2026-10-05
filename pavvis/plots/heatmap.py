@@ -52,6 +52,7 @@ def pav_heatmap(
     gene_set: Literal["all", "variable", "core", "soft_core", "dispensable", "private"] = "variable",
     col_cluster: bool = False,
     color_by: str | None = None,
+    show_gene_labels: bool = False,
 ) -> go.Figure:
     """Plot the PAV matrix as a binary heatmap (genes × samples).
 
@@ -70,6 +71,9 @@ def pav_heatmap(
         color_by: An optional discrete metadata column. When provided, a
             colour-coded annotation strip is drawn above the heatmap with one
             cell per sample coloured by group. Defaults to None.
+        show_gene_labels: If True, display gene identifiers on the y-axis.
+            Defaults to False. Only recommended for small gene sets as labels
+            become unreadable at scale.
 
     Returns:
         A Plotly Figure. Call .show() to display or .write_html() to export.
@@ -133,7 +137,7 @@ def pav_heatmap(
             y=[color_by],
             colorscale=colour_scale,
             showscale=False,
-            customdata=[[v] for v in col_vals],
+            customdata=[[[v] for v in col_vals]],
             hovertemplate="%{x}<br>" + color_by + ": %{customdata[0]}<extra></extra>",
             zmin=0,
             zmax=len(categories) - 1,
@@ -149,7 +153,7 @@ def pav_heatmap(
             hovertemplate="Gene: %{y}<br>Sample: %{x}<br>Present: %{z}<extra></extra>",
         ), row=2, col=1)
 
-        fig.update_yaxes(showticklabels=False, row=2, col=1)
+        fig.update_yaxes(showticklabels=show_gene_labels, row=2, col=1)
         fig.update_layout(height=600)
     else:
         fig = go.Figure(go.Heatmap(
@@ -161,71 +165,17 @@ def pav_heatmap(
             zmin=0, zmax=1,
             hovertemplate="Gene: %{y}<br>Sample: %{x}<br>Present: %{z}<extra></extra>",
         ))
-        fig.update_yaxes(showticklabels=False)
+        fig.update_yaxes(showticklabels=show_gene_labels)
 
     fig.update_layout(
         title=f"PAV Matrix — {gene_set.replace('_', ' ').title()} genes",
-        xaxis_title="Samples",
     )
+    if color_by is not None:
+        fig.update_xaxes(title_text="Samples", row=2, col=1)
+    else:
+        fig.update_xaxes(title_text="Samples")
     return fig
 
-
-def gene_cooccurrence_heatmap(
-    pm: PavMatrix,
-    gene_set: Literal["variable", "core", "soft_core", "dispensable", "private"] = "variable",
-) -> go.Figure:
-    """Plot a symmetric gene × gene co-occurrence heatmap.
-
-    Each cell (i, j) shows the fraction of samples in which both gene i and
-    gene j are present simultaneously. The diagonal equals each gene's presence
-    frequency. Genes are ordered by their position in the PAV matrix.
-
-    !!! warning "Memory scaling"
-        This plot requires O(genes²) memory. For gene sets larger than ~5 000
-        genes consider using gene_set='soft_core' or gene_set='dispensable'
-        to reduce scope.
-
-    Args:
-        pm: A PavMatrix instance.
-        gene_set: Subset of genes to include. Defaults to 'variable'. Does not
-            accept 'all' to guard against accidentally building a very large matrix.
-
-    Returns:
-        A Plotly Figure. Call .show() to display or .write_html() to export.
-    """
-    gene_index = _resolve_gene_index(pm, gene_set)
-    n_genes = len(gene_index)
-    if n_genes > 5000:
-        warnings.warn(
-            f"gene_cooccurrence_heatmap: {n_genes} genes selected. The co-occurrence "
-            f"matrix will be {n_genes}×{n_genes} and may require significant memory and "
-            f"render time. Consider a more specific gene_set (e.g. 'soft_core' or "
-            f"'dispensable') to reduce scope.",
-            UserWarning, stacklevel=2,
-        )
-    pav_sub = pm.pav.loc[gene_index].values.astype(np.float64)  # (genes, samples)
-    n_samples = pav_sub.shape[1]
-
-    # co-occurrence[i,j] = number of samples where both present / n_samples
-    cooccurrence = (pav_sub @ pav_sub.T) / n_samples
-    genes = list(pm.pav.loc[gene_index].index)
-
-    fig = go.Figure(go.Heatmap(
-        z=cooccurrence.tolist(),
-        x=genes,
-        y=genes,
-        colorscale="Blues",
-        zmin=0, zmax=1,
-        colorbar=dict(title="Co-occurrence"),
-        hovertemplate="Gene x: %{x}<br>Gene y: %{y}<br>Co-occurrence: %{z:.3f}<extra></extra>",
-    ))
-
-    fig.update_layout(
-        title=f"Gene Co-occurrence — {gene_set.replace('_', ' ').title()} genes",
-        xaxis=dict(showticklabels=False),
-        yaxis=dict(showticklabels=False),
-    )
-    return fig
 
 
 def sample_similarity_heatmap(
@@ -305,7 +255,7 @@ def sample_similarity_heatmap(
             colorscale=colour_scale,
             showscale=False,
             zmin=0, zmax=len(categories) - 1,
-            customdata=[[v] for v in col_vals],
+            customdata=[[[v] for v in col_vals]],
             hovertemplate="%{x}<br>" + color_by + ": %{customdata[0]}<extra></extra>",
         ), row=1, col=2)
 
@@ -317,7 +267,7 @@ def sample_similarity_heatmap(
             colorscale=colour_scale,
             showscale=False,
             zmin=0, zmax=len(categories) - 1,
-            customdata=[[v] for v in col_vals],
+            customdata=[[[v]] for v in col_vals],
             hovertemplate="%{y}<br>" + color_by + ": %{customdata[0]}<extra></extra>",
         ), row=2, col=1)
 
