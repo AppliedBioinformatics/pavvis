@@ -143,8 +143,8 @@ umap.scatter3d(pm, color_by="species", depth=True).show()  # 3D with depth scali
 
 ## Documentation
 
-Full documentation including concepts, API reference, and getting-started guide is available at the project docs site 
-at GitHub Pages (see sidebar).
+Full documentation including concepts, API reference, and getting-started guide is available at
+**https://appliedbioinformatics.github.io/pavvis/**
 
 To run the docs locally:
 

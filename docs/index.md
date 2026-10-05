@@ -6,6 +6,18 @@ pavvis was designed to be easy to use and optimised for large-scale genomic data
 Python package, we recommend reading through our [concepts](concepts.md) page, that will help you to understand the data structures
 associated with all analysis in this Python package.
 
+## Plotting modules
+
+| Module | Description |
+|---|---|
+| [Presence](api/plots/presence.md) | Gene presence frequency histograms and per-sample gene count plots |
+| [Curves](api/plots/curves.md) | Pangenome accumulation curves and Jaccard similarity curves |
+| [Variable Genes](api/plots/variable_genes.md) | Frequency distributions and exclusive gene bar charts |
+| [UMAP](api/plots/umap.md) | 2D and 3D UMAP embeddings of sample PAV profiles |
+| [Heatmap](api/plots/heatmap.md) | PAV matrix and sample similarity heatmaps |
+
+---
+
 ## Quick start
 
 ```py title="Getting started with pavvis." linenums="1"

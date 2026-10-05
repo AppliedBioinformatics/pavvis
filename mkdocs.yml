@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_name: pavvis
+site_url: https://appliedbioinformatics.github.io/pavvis/
 site_description: Visualisation tools for gene Presence/Absence Variation (PAV) matrix data
 
 theme:
