@@ -398,26 +398,128 @@ class PavMatrix:
         Raises:
             ValueError: If column is not found in metadata.
         """
+        groups, group_matrix = self._group_matrix(column)
+        pav_var = self.pav.loc[self.variable_genes].values  # (genes, samples)
+        group_counts = pav_var @ group_matrix               # (genes, groups)
+        # Exclusive: every presence of the gene falls inside the group.
+        exclusive = (group_counts > 0) & (group_counts == pav_var.sum(axis=1)[:, None])
+        return {g: int(n) for g, n in zip(groups, exclusive.sum(axis=0))}
+
+    def _group_matrix(self, column: str) -> tuple[list[str], np.ndarray]:
+        """One-hot encode a discrete metadata column against the PAV sample order.
+
+        Returns:
+            Tuple of (groups, matrix), where groups is the sorted list of group
+            labels and matrix is an int array of shape (samples, groups) with a 1
+            where the sample belongs to the group.
+        """
         from pavvis._validation import validate_color_by
         validate_color_by(column, self.metadata, expected_type="discrete")
 
-        col = self.metadata[column].astype(str)
-        groups = sorted(col.dropna().unique())
-        pav_var = self.pav.loc[self.variable_genes].values  # (genes, samples)
-        sample_ids = list(self.pav.columns)
-        group_masks = {
-            g: np.array([col.loc[s] == g for s in sample_ids])
-            for g in groups
-        }
+        col = self.metadata.loc[self.pav.columns, column].astype(str)
+        groups = sorted(col.unique())
+        labels = col.to_numpy(dtype=object)  # plain array; pandas 3 string arrays don't broadcast
+        matrix = (labels[:, None] == np.array(groups, dtype=object)[None, :]).astype(int)
+        return groups, matrix
 
-        result = {}
-        for g in groups:
-            in_group = group_masks[g]
-            out_group = ~in_group
-            present_in = pav_var[:, in_group].any(axis=1)
-            absent_out = (pav_var[:, out_group] == 0).all(axis=1)
-            result[g] = int((present_in & absent_out).sum())
-        return result
+    def _gene_categories(self) -> pd.Series:
+        """Category label for every gene, using the same edges as the category properties.
+
+        Genes with a presence frequency in (0, private_min] belong to no category and
+        are labelled 'unclassified'.
+        """
+        freq = self.presence_frequency.values
+        labels = np.select(
+            [
+                freq == 1.0,
+                freq == 0.0,
+                freq >= self.soft_core_min,
+                freq >= self.dispensable_min,
+                freq > self.private_min,
+            ],
+            ["core", "absent", "soft_core", "dispensable", "private"],
+            default="unclassified",
+        )
+        return pd.Series(labels, index=self.pav.index, name="category")
+
+    def gene_table(self, column: str | None = None) -> pd.DataFrame:
+        """Summarise every gene's presence and category as a DataFrame.
+
+        The table always has these columns:
+
+        - `n_present`: number of samples the gene is present in.
+        - `frequency`: fraction of samples the gene is present in.
+        - `category`: 'core', 'soft_core', 'dispensable', 'private', 'absent', or
+          'unclassified' for genes with a frequency in (0, private_min].
+
+        When `column` is given, it also has:
+
+        - `n_<group>`: number of samples in each group the gene is present in.
+        - `exclusive_to`: the group a variable gene is present in exclusively
+          (see `exclusive_gene_counts`), or NaN if it is not exclusive to any group.
+
+        Args:
+            column: An optional discrete metadata column used to add the per-group
+                columns. Defaults to None.
+
+        Returns:
+            DataFrame indexed by gene ID.
+
+        Raises:
+            ValueError: If column is not a discrete metadata column.
+        """
+        n_present = self.pav.sum(axis=1)
+        table = pd.DataFrame({
+            "n_present": n_present,
+            "frequency": n_present / len(self.sample_ids),
+            "category": self._gene_categories(),
+        })
+        table.index.name = "gene_id"
+
+        if column is not None:
+            groups, group_matrix = self._group_matrix(column)
+            group_counts = self.pav.values @ group_matrix  # (genes, groups)
+            for i, g in enumerate(groups):
+                table[f"n_{g}"] = group_counts[:, i]
+
+            n_groups_present = (group_counts > 0).sum(axis=1)
+            is_variable = (n_present > 0) & (n_present < len(self.sample_ids))
+            exclusive = is_variable.values & (n_groups_present == 1)
+            table["exclusive_to"] = pd.Series(
+                np.array(groups, dtype=object)[group_counts.argmax(axis=1)],
+                index=table.index,
+            ).where(exclusive)
+
+        return table
+
+    def sample_table(self, include_metadata: bool = False) -> pd.DataFrame:
+        """Summarise every sample's gene content as a DataFrame.
+
+        The table has these columns:
+
+        - `n_genes`: number of genes present in the sample.
+        - `n_core`, `n_soft_core`, `n_dispensable`, `n_private`: number of genes
+          present in the sample from each category.
+        - `n_singletons`: number of genes present in this sample and no other.
+
+        Args:
+            include_metadata: If True, append the sample's metadata columns.
+                Defaults to False.
+
+        Returns:
+            DataFrame indexed by sample ID.
+        """
+        categories = self._gene_categories()
+        n_present = self.pav.sum(axis=1)
+        table = pd.DataFrame({"n_genes": self.pav.sum(axis=0)})
+        for category in ("core", "soft_core", "dispensable", "private"):
+            table[f"n_{category}"] = self.pav.loc[categories == category].sum(axis=0)
+        table["n_singletons"] = self.pav.loc[n_present == 1].sum(axis=0)
+        table.index.name = "sample"
+
+        if include_metadata:
+            table = table.join(self.metadata)
+        return table
 
     @property
     def presence_frequency(self) -> pd.Series:
