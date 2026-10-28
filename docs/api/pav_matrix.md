@@ -29,6 +29,27 @@ a pav.csv and accompanying metadata.csv file.
 
 ---
 
+## Subsetting
+`subset()` returns a new `PavMatrix` restricted to selected samples and/or genes, so any analysis or plot can be rerun
+on part of the data — for example a single clade or region. Samples can be selected by ID, by a pandas query against
+the metadata, or both. The original object is never modified.
+
+::: pavvis.pav_matrix.PavMatrix.subset
+
+```py
+modern = pm.subset(query="clade == 'Modern'")
+europe_deep = pm.subset(query="continent == 'Europe' and depth > 10")
+pair = pm.subset(samples=["Ability", "Agron"], drop_absent=True)
+
+print(modern)  # PavMatrix(34295 genes × 212 samples)
+```
+
+!!! note "Gene categories are recomputed"
+    Categories are always relative to the samples in the matrix. A gene that is variable across the full population
+    may be core, or absent, within a subset. Use `drop_absent=True` to remove genes that no retained sample carries.
+
+---
+
 ## Gene categories
 
 ::: pavvis.pav_matrix.PavMatrix.gene_counts

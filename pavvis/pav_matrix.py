@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -220,6 +221,94 @@ class PavMatrix:
             "private": len(self.private_genes),
             "absent": len(self.absent_genes),
         }
+
+    def subset(
+        self,
+        samples: list[str] | None = None,
+        genes: list[str] | None = None,
+        query: str | None = None,
+        drop_absent: bool = False,
+    ) -> PavMatrix:
+        """Return a new PavMatrix restricted to a subset of samples and/or genes.
+
+        Filters are combined: a sample is kept only if it is in `samples` (when
+        given) and matches `query` (when given). Samples and genes keep their order
+        from the original matrix. Gene categories are recomputed on the subset, so a
+        gene that is variable across the full matrix may be core or absent within
+        the subset. Thresholds are carried over; cached results (UMAP, Jaccard) are
+        not, and the original object is left unchanged.
+
+        Args:
+            samples: Sample IDs to keep. Defaults to None (all samples).
+            genes: Gene IDs to keep. Defaults to None (all genes).
+            query: A pandas query string evaluated against the metadata, e.g.
+                ``"clade == 'Modern'"`` or ``"depth > 10"``. Column names are
+                lowercase, as normalised on load. Defaults to None.
+            drop_absent: If True, remove genes absent from every retained sample.
+                A UserWarning reports how many genes were dropped. Defaults to False.
+
+        Returns:
+            A new PavMatrix containing copies of the selected data.
+
+        Raises:
+            TypeError: If `samples` or `genes` is passed as a single string
+                rather than a list.
+            ValueError: If any sample or gene ID is not found, or if the subset
+                contains no samples or no genes.
+
+        Warns:
+            UserWarning: If drop_absent=True removes any genes, stating how many.
+        """
+        for name, ids in (("samples", samples), ("genes", genes)):
+            if isinstance(ids, str):
+                raise TypeError(
+                    f"{name} must be a list of IDs, not a string. "
+                    f"Use {name}=['{ids}'] to select a single ID."
+                )
+
+        sample_mask = np.ones(len(self.pav.columns), dtype=bool)
+        gene_mask = np.ones(len(self.pav.index), dtype=bool)
+
+        if samples is not None:
+            unknown = [s for s in samples if s not in self.pav.columns]
+            if unknown:
+                raise ValueError(f"Samples not found in PAV matrix: {unknown}")
+            sample_mask &= self.pav.columns.isin(samples)
+
+        if query is not None:
+            matched = self.metadata.query(query).index
+            sample_mask &= self.pav.columns.isin(matched)
+
+        if genes is not None:
+            unknown = [g for g in genes if g not in self.pav.index]
+            if unknown:
+                raise ValueError(f"Genes not found in PAV matrix: {unknown}")
+            gene_mask &= self.pav.index.isin(genes)
+
+        if not sample_mask.any():
+            raise ValueError("Subset contains no samples.")
+
+        pav = self.pav.loc[gene_mask, sample_mask]
+        n_selected = len(pav)
+        if drop_absent:
+            pav = pav.loc[pav.any(axis=1)]
+        if pav.empty:
+            raise ValueError("Subset contains no genes.")
+        n_dropped = n_selected - len(pav)
+        if n_dropped:
+            warnings.warn(
+                f"subset: dropped {n_dropped:,} of {n_selected:,} genes absent from all "
+                f"{pav.shape[1]:,} retained samples (drop_absent=True).",
+                UserWarning, stacklevel=2,
+            )
+
+        return PavMatrix._from_dataframes(
+            pav=pav.copy(),
+            metadata=self.metadata.loc[pav.columns].copy(),
+            soft_core_min=self.soft_core_min,
+            dispensable_min=self.dispensable_min,
+            private_min=self.private_min,
+        )
 
     def compute_umap(
         self,
