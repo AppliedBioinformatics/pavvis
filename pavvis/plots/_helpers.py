@@ -10,6 +10,18 @@ pio.templates.default = "simple_white"
 if TYPE_CHECKING:
     from pavvis.pav_matrix import PavMatrix
 
+# Distinct colours for metadata groups (colourblind-friendly palette).
+_GROUP_COLOURS = [
+    "#2a9d8f",  # teal
+    "#e9c46a",  # yellow
+    "#e76f51",  # orange-red
+    "#6a4c93",  # indigo
+    "#264653",  # dark teal
+    "#f4a261",  # amber
+    "#a8dadc",  # light blue
+    "#457b9d",  # steel blue
+]
+
 
 def _resolve_gene_index(
     pm: PavMatrix,

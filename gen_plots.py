@@ -67,6 +67,10 @@ _save(
     "grouped_variable_curve",
 )
 _save(
+    curves.grouped_pangenome_curve(pm, column="clade", permutations=5, random_state=0),
+    "grouped_pangenome_curve",
+)
+_save(
     curves.jaccard_similarity_curve(pm, column="clade", group_order=GROUP_ORDER, permutations=5),
     "jaccard_similarity_curve",
 )

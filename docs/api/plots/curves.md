@@ -162,6 +162,60 @@ curves.grouped_variable_curve(
 
 ---
 
+## Per-group pangenome curves
+
+### Description
+
+Plots a separate accumulation curve for each group in a discrete metadata column. Unlike the grouped variable gene
+curve above, where groups are added one after another along a single curve, here each group's samples are accumulated
+**independently** and plotted on a shared axes starting from the first genome. This allows groups to be compared directly at
+equal sample sizes. The `curve` argument selects what is accumulated: the **pangenome** size (genes present in at least
+one of the first $k$ samples), the **core** size (genes present in all $k$ samples), or the **variable** gene count (the
+difference between the two). Within each group the sample order is randomly permuted $P$ times, and the mean and ±1
+standard deviation bands for each curve are shown. Groups with fewer than 2 samples are skipped with a warning.
+
+!!! tip "Comparing groups of different sizes"
+    Each group's curve ends at its own sample size. To compare groups fairly, read the curves at the same number of
+    genomes — for example, at the size of the smallest group — rather than comparing their end points.
+
+!!! tip "Performance"
+    A high number of permutations can be computationally intensive for large PAV matrices. We recommend starting
+    with a lower value (e.g. `permutations=10`) to verify the plot looks as expected, before increasing to a
+    higher value for final figures.
+
+### Function
+
+::: pavvis.plots.curves.grouped_pangenome_curve
+
+### Example
+
+``` py
+from pavvis import PavMatrix
+import pavvis.plots.curves as curves
+
+pm = PavMatrix(
+    matrix_path="path/to/pav.csv",
+    metadata_path="path/to/metadata.csv",
+)
+
+curves.grouped_pangenome_curve(
+    pm,
+    column="clade",
+    curve="pangenome",
+    permutations=50,
+).show()
+```
+
+--8<-- "docs/statics/plots/grouped_pangenome_curve.html"
+
+!!! note "Interpretation"
+    A group whose curve rises more steeply than the others captures more gene content per added genome, indicating
+    greater PAV diversity within that group — for example, landraces or wild relatives compared with elite cultivars.
+    A group whose curve flattens early is comparatively uniform in gene content. With `curve="core"`, a group whose
+    core declines more slowly shares more of its gene content across all of its members.
+
+---
+
 ## Jaccard Similarity Curves
 The Jaccard similarity between two samples is the proportion of genes that are shared between them relative to the total
 number of genes present in either. Unlike simple overlap counts, it accounts for the size of each sample's gene set,

@@ -1,9 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+import warnings
+from typing import TYPE_CHECKING, Literal, Sequence
 
 import numpy as np
 import plotly.graph_objects as go
+
+from pavvis._accumulation import accumulation_runs
+from pavvis._validation import validate_color_by
+from pavvis.plots._helpers import _GROUP_COLOURS
 
 if TYPE_CHECKING:
     from pavvis.pav_matrix import PavMatrix
@@ -13,6 +18,7 @@ def legacy_pangenome_curve(
     pm: PavMatrix,
     permutations: int = 100,
     log_y: bool = False,
+    random_state: int | None = None,
 ) -> go.Figure:
     """Plot pangenome and core genome curves across increasing genome counts.
 
@@ -26,6 +32,7 @@ def legacy_pangenome_curve(
         permutations: Number of random sample orderings to average over.
             Defaults to 100.
         log_y: If True, display the y-axis on a log10 scale. Defaults to False.
+        random_state: Random seed for reproducibility. Defaults to None.
 
     Returns:
         A Plotly Figure. Call .show() to display or .write_html() to export.
@@ -34,15 +41,9 @@ def legacy_pangenome_curve(
     n_samples = pav.shape[1]
     x = list(range(1, n_samples + 1))
 
-    pan_runs = np.empty((permutations, n_samples), dtype=np.int32)
-    core_runs = np.empty((permutations, n_samples), dtype=np.int32)
-
-    rng = np.random.default_rng()
-    for i in range(permutations):
-        order = rng.permutation(n_samples)
-        shuffled = pav[:, order]
-        pan_runs[i] = (np.cumsum(shuffled, axis=1) > 0).sum(axis=0)
-        core_runs[i] = np.cumprod(shuffled, axis=1).sum(axis=0)
+    pan_runs, core_runs = accumulation_runs(
+        pav, permutations, np.random.default_rng(random_state),
+    )
 
     pan_mean = pan_runs.mean(axis=0)
     pan_upper = pan_mean + pan_runs.std(axis=0)
@@ -107,6 +108,7 @@ def variable_gene_curve(
     pm: PavMatrix,
     permutations: int = 100,
     log_y: bool = False,
+    random_state: int | None = None,
 ) -> go.Figure:
     """Plot core and variable genome curves on separate left/right y-axes.
 
@@ -123,29 +125,21 @@ def variable_gene_curve(
         permutations: Number of random sample orderings to average over.
             Defaults to 100.
         log_y: If True, display both y-axes on a log10 scale. Defaults to False.
+        random_state: Random seed for reproducibility. Defaults to None.
 
     Returns:
         A Plotly Figure. Call .show() to display or .write_html() to export.
     """
     pav = pm.pav.values  # shape: (genes, samples)
-    n_genes, n_samples = pav.shape
+    n_samples = pav.shape[1]
     x = list(range(1, n_samples + 1))
     axis_type = "log" if log_y else "linear"
 
-    core_runs = np.empty((permutations, n_samples), dtype=np.int32)
-    var_runs = np.empty((permutations, n_samples), dtype=np.int32)
-
-    rng = np.random.default_rng()
-    for i in range(permutations):
-        order = rng.permutation(n_samples)
-        shuffled = pav[:, order]
-        # Core: gene must be present in every genome seen so far (cumprod stays 1)
-        core_counts = np.cumprod(shuffled, axis=1).sum(axis=0)
-        # Pangenome: total unique genes seen so far
-        pan_counts = (np.cumsum(shuffled, axis=1) > 0).sum(axis=0)
-        # Variable: in pangenome but not in core
-        core_runs[i] = core_counts
-        var_runs[i] = pan_counts - core_counts
+    pan_runs, core_runs = accumulation_runs(
+        pav, permutations, np.random.default_rng(random_state),
+    )
+    # Variable: in pangenome but not in core
+    var_runs = pan_runs - core_runs
 
     def _band_traces(runs, color_rgb, group, yaxis):
         mean = runs.mean(axis=0)
@@ -334,6 +328,136 @@ def grouped_variable_curve(
         title=f"Variable Gene Accumulation by {column} ({permutations} permutations)",
         xaxis_title="Number of Genomes",
         yaxis_title="Number of Variable Genes",
+        yaxis=dict(type="log" if log_y else "linear"),
+    )
+
+    return fig
+
+
+def _hex_to_rgba(hex_colour: str, alpha: float) -> str:
+    r, g, b = (int(hex_colour[i:i + 2], 16) for i in (1, 3, 5))
+    return f"rgba({r},{g},{b},{alpha})"
+
+
+def grouped_pangenome_curve(
+    pm: PavMatrix,
+    column: str,
+    groups: Sequence[str] | None = None,
+    curve: Literal["pangenome", "core", "variable"] = "pangenome",
+    permutations: int = 100,
+    log_y: bool = False,
+    random_state: int | None = None,
+) -> go.Figure:
+    """Overlay separate accumulation curves for each group in a metadata column.
+
+    Each group's samples are accumulated independently: for each permutation a
+    random order of that group's samples is drawn, and at each step k the
+    pangenome size (union), core size (intersection) or variable gene count
+    (union minus intersection) of the first k samples is recorded. The mean and
+    ±1 std band across permutations are plotted for every group on shared axes,
+    so groups can be compared at equal sample sizes. Clicking a legend entry
+    toggles that group's mean line and std band together.
+
+    Args:
+        pm: A PavMatrix instance.
+        column: A discrete metadata column used to assign samples to groups.
+        groups: Group labels to plot, in legend order. Every value must be
+            present in pm.metadata[column]. Defaults to all groups, sorted.
+        curve: Which quantity to accumulate — 'pangenome', 'core' or
+            'variable'. Defaults to 'pangenome'.
+        permutations: Number of random sample orderings to average over within
+            each group. Defaults to 100.
+        log_y: If True, display the y-axis on a log10 scale. Defaults to False.
+        random_state: Random seed for reproducibility. Defaults to None.
+
+    Returns:
+        A Plotly Figure. Call .show() to display or .write_html() to export.
+
+    Raises:
+        ValueError: If `column` is not a discrete metadata column, if any value
+            in `groups` is not found in pm.metadata[column], if `curve` is not
+            a valid option, or if no group has at least 2 samples.
+
+    Warns:
+        UserWarning: For each group with fewer than 2 samples, which is skipped.
+    """
+    labels = {
+        "pangenome": ("Pangenome", "Number of Genes"),
+        "core": ("Core Genome", "Number of Core Genes"),
+        "variable": ("Variable Gene", "Number of Variable Genes"),
+    }
+    if curve not in labels:
+        raise ValueError(
+            f"Invalid curve '{curve}'. Expected one of: {list(labels)}."
+        )
+    validate_color_by(column, pm.metadata, expected_type="discrete")
+
+    col = pm.metadata.loc[pm.sample_ids, column].astype(str)
+    if groups is None:
+        groups = sorted(col.unique())
+    else:
+        missing = [g for g in groups if g not in col.values]
+        if missing:
+            raise ValueError(
+                f"Groups not found in metadata column '{column}': {missing}. "
+                f"Available values: {sorted(col.unique())}"
+            )
+
+    pav = pm.pav.values  # (genes, samples)
+    rng = np.random.default_rng(random_state)
+    traces = []
+    for i, group in enumerate(groups):
+        idx = np.flatnonzero(col.values == group)
+        if len(idx) < 2:
+            warnings.warn(
+                f"grouped_pangenome_curve: group '{group}' has {len(idx)} sample(s) "
+                f"and was skipped; at least 2 samples are needed for a curve.",
+                UserWarning, stacklevel=2,
+            )
+            continue
+
+        pan_runs, core_runs = accumulation_runs(pav[:, idx], permutations, rng)
+        runs = {
+            "pangenome": pan_runs,
+            "core": core_runs,
+            "variable": pan_runs - core_runs,
+        }[curve]
+        mean = runs.mean(axis=0)
+        std = runs.std(axis=0)
+        x = list(range(1, len(idx) + 1))
+        colour = _GROUP_COLOURS[i % len(_GROUP_COLOURS)]
+
+        traces += [
+            go.Scatter(
+                x=x, y=(mean + std).tolist(),
+                mode="lines", line=dict(width=0),
+                legendgroup=group, showlegend=False, hoverinfo="skip",
+            ),
+            go.Scatter(
+                x=x, y=(mean - std).tolist(),
+                mode="lines", line=dict(width=0),
+                fill="tonexty", fillcolor=_hex_to_rgba(colour, 0.2),
+                legendgroup=group, showlegend=False, hoverinfo="skip",
+            ),
+            go.Scatter(
+                x=x, y=mean.tolist(),
+                mode="lines", name=f"{group} (n={len(idx)})",
+                line=dict(color=colour, width=2),
+                legendgroup=group,
+            ),
+        ]
+
+    if not traces:
+        raise ValueError(
+            f"No group in '{column}' has at least 2 samples; nothing to plot."
+        )
+
+    title, yaxis_title = labels[curve]
+    fig = go.Figure(traces)
+    fig.update_layout(
+        title=f"{title} Curves by {column} ({permutations} permutations)",
+        xaxis_title="Number of Genomes",
+        yaxis_title=yaxis_title,
         yaxis=dict(type="log" if log_y else "linear"),
     )
 

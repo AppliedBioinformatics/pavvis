@@ -9,24 +9,12 @@ import plotly.io as pio
 from plotly.subplots import make_subplots
 
 from pavvis._validation import validate_color_by
-from pavvis.plots._helpers import _resolve_gene_index
+from pavvis.plots._helpers import _GROUP_COLOURS, _resolve_gene_index
 
 pio.templates.default = "simple_white"
 
 if TYPE_CHECKING:
     from pavvis.pav_matrix import PavMatrix
-
-# Distinct colours for metadata annotation strips (colourblind-friendly palette).
-_STRIP_COLOURS = [
-    "#2a9d8f",  # teal
-    "#e9c46a",  # yellow
-    "#e76f51",  # orange-red
-    "#6a4c93",  # indigo
-    "#264653",  # dark teal
-    "#f4a261",  # amber
-    "#a8dadc",  # light blue
-    "#457b9d",  # steel blue
-]
 
 
 def _cluster_order(distance_matrix: np.ndarray) -> list[int]:
@@ -127,7 +115,7 @@ def pav_heatmap(
         cat_to_int = {c: i for i, c in enumerate(categories)}
         strip_z = [[cat_to_int[v] for v in col_vals]]
         colour_scale = [
-            [i / max(len(categories) - 1, 1), _STRIP_COLOURS[i % len(_STRIP_COLOURS)]]
+            [i / max(len(categories) - 1, 1), _GROUP_COLOURS[i % len(_GROUP_COLOURS)]]
             for i in range(len(categories))
         ]
 
@@ -233,7 +221,7 @@ def sample_similarity_heatmap(
         cat_to_int = {c: i for i, c in enumerate(categories)}
         strip_z = [[cat_to_int[v] for v in col_vals]]
         colour_scale = [
-            [i / max(len(categories) - 1, 1), _STRIP_COLOURS[i % len(_STRIP_COLOURS)]]
+            [i / max(len(categories) - 1, 1), _GROUP_COLOURS[i % len(_GROUP_COLOURS)]]
             for i in range(len(categories))
         ]
 
