@@ -97,9 +97,18 @@ _save(heatmap.pav_heatmap(pm_hm, col_cluster=True, color_by="clade"), "pav_heatm
 _save(heatmap.sample_similarity_heatmap(pm_hm, color_by="clade", cluster=True), "sample_similarity_heatmap")
 
 print("Generating UMAP plots...")
-pm.compute_umap()
-import pavvis.plots.umap as umap_plots
-_save(umap_plots.scatter(pm, color_by="clade"), "umap_scatter")
-_save(umap_plots.scatter3d(pm, color_by="clade"), "umap_scatter3d")
+if not reset and all((OUT_DIR / f"{n}.html").exists() for n in ("umap_scatter", "umap_scatter3d")):
+    print("  skipped UMAP (outputs already exist)")
+else:
+    pm.compute_umap()
+    import pavvis.plots.umap as umap_plots
+    _save(umap_plots.scatter(pm, color_by="clade"), "umap_scatter")
+    _save(umap_plots.scatter3d(pm, color_by="clade"), "umap_scatter3d")
+
+print("Generating PCoA plots...")
+pm.compute_pcoa()
+import pavvis.plots.pcoa as pcoa_plots
+_save(pcoa_plots.scatter(pm, color_by="clade"), "pcoa_scatter")
+_save(pcoa_plots.scree(pm), "pcoa_scree")
 
 print("Done.")

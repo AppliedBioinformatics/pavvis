@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 
 from pavvis._validation import validate_color_by, infer_column_type
+from pavvis.plots._helpers import _embedding_scatter_traces
 
 pio.templates.default = "simple_white"
 
@@ -47,47 +48,7 @@ def scatter(
     if color_by is not None:
         validate_color_by(color_by, pm.metadata)
 
-    emb = pm._umap_embedding
-    x = emb["UMAP1"].tolist()
-    y = emb["UMAP2"].tolist()
-    samples = emb.index.tolist()
-
-    if color_by is None:
-        traces = [go.Scatter(
-            x=x, y=y, text=samples, mode="markers",
-            name="Samples",
-            marker=dict(color="#2a9d8f", size=7),
-            hovertemplate="%{text}<extra></extra>",
-        )]
-
-    elif infer_column_type(pm.metadata[color_by]) == "discrete":
-        col = pm.metadata[color_by].astype(str)
-        categories = sorted(col.dropna().unique())
-        traces = []
-        for cat in categories:
-            mask = col == cat
-            cat_samples = emb.index[mask].tolist()
-            traces.append(go.Scatter(
-                x=emb.loc[mask, "UMAP1"].tolist(),
-                y=emb.loc[mask, "UMAP2"].tolist(),
-                text=cat_samples,
-                mode="markers", name=cat,
-                marker=dict(size=7),
-                hovertemplate=f"{color_by}: {cat}<br>%{{text}}<extra></extra>",
-            ))
-
-    else:  # continuous
-        color_vals = pm.metadata.loc[samples, color_by].tolist()
-        traces = [go.Scatter(
-            x=x, y=y, text=samples, mode="markers",
-            name=color_by,
-            marker=dict(
-                color=color_vals, colorscale="Viridis", size=7,
-                colorbar=dict(title=color_by), showscale=True,
-            ),
-            hovertemplate=f"{color_by}: %{{marker.color:.3g}}<br>%{{text}}<extra></extra>",
-        )]
-
+    traces = _embedding_scatter_traces(pm._umap_embedding, "UMAP1", "UMAP2", pm.metadata, color_by)
     fig = go.Figure(traces)
     fig.update_layout(
         title="UMAP Embedding",

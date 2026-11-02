@@ -60,6 +60,7 @@ nav:
       - Curves: api/plots/curves.md
       - Variable Genes: api/plots/variable_genes.md
       - UMAP: api/plots/umap.md
+      - PCoA: api/plots/pcoa.md
       - Heatmap: api/plots/heatmap.md
 
 markdown_extensions:

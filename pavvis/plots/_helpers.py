@@ -3,7 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
+import plotly.graph_objects as go
 import plotly.io as pio
+
+from pavvis._validation import infer_column_type
 
 pio.templates.default = "simple_white"
 
@@ -48,3 +51,52 @@ def _gene_set_labels(
         "dispensable": ("Dispensable Gene Count per Sample", "Number of Dispensable Genes"),
         "private": ("Private Gene Count per Sample", "Number of Private Genes"),
     }[gene_set]
+
+
+def _embedding_scatter_traces(
+    emb: pd.DataFrame,
+    xcol: str,
+    ycol: str,
+    metadata: pd.DataFrame,
+    color_by: str | None,
+) -> list[go.Scatter]:
+    """Build 2D scatter traces for a sample embedding, coloured by an optional metadata column.
+
+    Discrete columns give one trace per category; continuous columns give a single
+    trace on a Viridis colorscale. The caller is responsible for validating color_by.
+    """
+    samples = emb.index.tolist()
+
+    if color_by is None:
+        return [go.Scatter(
+            x=emb[xcol].tolist(), y=emb[ycol].tolist(), text=samples, mode="markers",
+            name="Samples",
+            marker=dict(color="#2a9d8f", size=7),
+            hovertemplate="%{text}<extra></extra>",
+        )]
+
+    if infer_column_type(metadata[color_by]) == "discrete":
+        col = metadata.loc[emb.index, color_by].astype(str)
+        traces = []
+        for cat in sorted(col.dropna().unique()):
+            mask = (col == cat).values
+            traces.append(go.Scatter(
+                x=emb.loc[mask, xcol].tolist(),
+                y=emb.loc[mask, ycol].tolist(),
+                text=emb.index[mask].tolist(),
+                mode="markers", name=cat,
+                marker=dict(size=7),
+                hovertemplate=f"{color_by}: {cat}<br>%{{text}}<extra></extra>",
+            ))
+        return traces
+
+    color_vals = metadata.loc[samples, color_by].tolist()
+    return [go.Scatter(
+        x=emb[xcol].tolist(), y=emb[ycol].tolist(), text=samples, mode="markers",
+        name=color_by,
+        marker=dict(
+            color=color_vals, colorscale="Viridis", size=7,
+            colorbar=dict(title=color_by), showscale=True,
+        ),
+        hovertemplate=f"{color_by}: %{{marker.color:.3g}}<br>%{{text}}<extra></extra>",
+    )]

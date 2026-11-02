@@ -72,6 +72,9 @@ class PavMatrix:
         self._umap_embedding: pd.DataFrame | None = None
         self._umap_params: tuple | None = None
         self._jaccard_matrix: pd.DataFrame | None = None
+        self._pcoa_embedding: pd.DataFrame | None = None
+        self._pcoa_explained: pd.Series | None = None
+        self._pcoa_params: int | None = None
 
     @classmethod
     def _from_dataframes(
@@ -96,6 +99,9 @@ class PavMatrix:
         obj._umap_embedding = None
         obj._umap_params = None
         obj._jaccard_matrix = None
+        obj._pcoa_embedding = None
+        obj._pcoa_explained = None
+        obj._pcoa_params = None
         return obj
 
     # Built ins.
@@ -235,8 +241,8 @@ class PavMatrix:
         given) and matches `query` (when given). Samples and genes keep their order
         from the original matrix. Gene categories are recomputed on the subset, so a
         gene that is variable across the full matrix may be core or absent within
-        the subset. Thresholds are carried over; cached results (UMAP, Jaccard) are
-        not, and the original object is left unchanged.
+        the subset. Thresholds are carried over; cached results (UMAP, Jaccard, PCoA)
+        are not, and the original object is left unchanged.
 
         Args:
             samples: Sample IDs to keep. Defaults to None (all samples).
@@ -380,6 +386,41 @@ class PavMatrix:
         self._jaccard_matrix = pd.DataFrame(
             similarity, index=self.pav.columns, columns=self.pav.columns,
         )
+        return self
+
+    def compute_pcoa(self, n_components: int | None = 10) -> PavMatrix:
+        """Compute a PCoA (classical MDS) of the samples on Jaccard distance and cache it.
+
+        Distances are D = 1 − J, where J is the Jaccard similarity from
+        `compute_jaccard()` (called automatically if needed). Jaccard distance is not
+        Euclidean, so the decomposition yields some negative eigenvalues; only axes with
+        positive eigenvalues are kept, and explained variance is each eigenvalue divided
+        by the sum of all positive eigenvalues. Re-calling with the same `n_components`
+        returns the cached result immediately.
+
+        Args:
+            n_components: Number of leading axes to keep. If fewer positive axes exist,
+                all of them are kept. None keeps every positive axis. Defaults to 10.
+
+        Returns:
+            self, so calls can be chained: pm.compute_pcoa().plot...
+        """
+        from pavvis._ordination import pcoa_eig
+
+        if self._pcoa_params == n_components and self._pcoa_embedding is not None:
+            return self
+
+        self.compute_jaccard()
+        vals, vecs = pcoa_eig(1.0 - self._jaccard_matrix.values)
+        positive = vals > 0
+        explained = vals[positive] / vals[positive].sum()
+        coords = vecs[:, positive] * np.sqrt(vals[positive])
+
+        k = coords.shape[1] if n_components is None else min(n_components, coords.shape[1])
+        axes = [f"PCo{i + 1}" for i in range(k)]
+        self._pcoa_embedding = pd.DataFrame(coords[:, :k], index=self.pav.columns, columns=axes)
+        self._pcoa_explained = pd.Series(explained[:k], index=axes, name="explained")
+        self._pcoa_params = n_components
         return self
 
     def exclusive_gene_counts(self, column: str) -> dict[str, int]:

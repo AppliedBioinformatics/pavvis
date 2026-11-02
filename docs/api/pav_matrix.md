@@ -122,3 +122,10 @@ is not automatically called on initial construction of new `PavMatrix()` objects
 intensive, particularly for large datasets.
 
 ::: pavvis.pav_matrix.PavMatrix.compute_umap
+---
+
+## PCoA
+Principal Coordinates Analysis (classical MDS) on Jaccard distance gives a linear ordination of the samples with a
+known proportion of variation per axis. `compute_pcoa()` caches the result for the [PCoA plots](plots/pcoa.md).
+
+::: pavvis.pav_matrix.PavMatrix.compute_pcoa
