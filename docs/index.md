@@ -15,6 +15,7 @@ associated with all analysis in this Python package.
 | [Variable Genes](api/plots/variable_genes.md) | Frequency distributions and exclusive gene bar charts |
 | [UMAP](api/plots/umap.md) | 2D and 3D UMAP embeddings of sample PAV profiles |
 | [Heatmap](api/plots/heatmap.md) | PAV matrix and sample similarity heatmaps |
+| [PCoA](api/plots/pcoa.md) | Principal coordinates ordination on Jaccard distance and scree plots |
 
 ---
 
@@ -22,14 +23,14 @@ associated with all analysis in this Python package.
 
 ```py title="Getting started with pavvis." linenums="1"
 from pavvis import PavMatrix
-import pavvis.plots as plots
+import pavvis.plots.presence as presence
 
 pm = PavMatrix("pav_matrix.csv", "metadata.csv")
 print(pm)
 # PavMatrix(34295 genes × 1039 samples)
 
 print(pm.gene_counts)
-# {'core': 12, 'variable': 28761, 'absent': 5522}
+# {'core': 2, 'soft_core': 252, 'dispensable': 9853, 'private': 24186, 'absent': 2}
 
-plots.presence_frequency_histogram(pm).show()
+presence.frequency_histogram(pm).show()
 ```

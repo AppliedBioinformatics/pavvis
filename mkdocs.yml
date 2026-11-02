@@ -24,10 +24,10 @@ theme:
     text: Inter
     code: JetBrains Mono
   features:
-    - navigation.tabs
     - navigation.top
     - navigation.sections
     - navigation.indexes
+    - navigation.expand
     - content.code.copy
     - content.code.annotate
     - toc.follow
@@ -48,6 +48,10 @@ plugins:
             show_source: false
             show_root_heading: true
             members_order: source
+            show_root_full_path: false
+            separate_signature: true
+            show_signature_annotations: false
+            line_length: 80
 
 nav:
   - Home: index.md
