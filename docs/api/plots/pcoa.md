@@ -64,3 +64,54 @@ pcoa.scree(pm).show()
 ```
 
 --8<-- "docs/statics/plots/pcoa_scree.html"
+
+---
+
+## Group centroids
+
+### Description
+
+Plots samples on two PCoA axes with each group's centre (spatial median or mean) and a line from every sample to its
+centre, like `plot(betadisper(...))` in vegan. Shaded convex hulls outline each group. With `stats=True` the plot is
+annotated with the PERMANOVA and PERMDISP results, so the figure and the tests it illustrates come from one call.
+
+Centres are computed in the full PCoA space, as in the dispersion test, and then projected onto the plotted axes.
+
+### Function
+
+::: pavvis.plots.pcoa.centroids
+
+### Example
+
+``` py
+import pavvis.plots.pcoa as pcoa
+
+pcoa.centroids(pm, "clade", permutations=999, random_state=0).show()
+pcoa.centroids(pm, "clade", components=(1, 3), hull=False).show()
+```
+
+--8<-- "docs/statics/plots/pcoa_centroids.html"
+
+!!! note "Interpretation"
+    Centres far apart with short spider lines indicate groups that differ in location. Long lines in one group and short
+    lines in another indicate unequal dispersion, which the PERMDISP result in the annotation tests formally.
+
+---
+
+## Dispersion boxplot
+
+### Description
+
+Distance of each sample to its group centre, one box per group: the equivalent of `boxplot(betadisper(...))`.
+
+### Function
+
+::: pavvis.plots.pcoa.dispersion_boxplot
+
+### Example
+
+``` py
+pcoa.dispersion_boxplot(pm, "clade").show()
+```
+
+--8<-- "docs/statics/plots/pcoa_dispersion_boxplot.html"

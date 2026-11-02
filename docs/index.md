@@ -15,7 +15,14 @@ associated with all analysis in this Python package.
 | [Variable Genes](api/plots/variable_genes.md) | Frequency distributions and exclusive gene bar charts |
 | [UMAP](api/plots/umap.md) | 2D and 3D UMAP embeddings of sample PAV profiles |
 | [Heatmap](api/plots/heatmap.md) | PAV matrix and sample similarity heatmaps |
-| [PCoA](api/plots/pcoa.md) | Principal coordinates ordination on Jaccard distance and scree plots |
+| [PCoA](api/plots/pcoa.md) | Principal coordinates ordination, scree, group centroid and dispersion plots |
+
+## Statistics modules
+
+| Module | Description |
+|---|---|
+| [Indicator Genes](api/stats/indicator.md) | IndVal.g indicator gene analysis with permutation tests and FDR |
+| [PERMANOVA](api/stats/permanova.md) | PERMANOVA and dispersion (PERMDISP) tests on Jaccard distance |
 
 ---
 

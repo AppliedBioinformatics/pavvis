@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 
 from pavvis._accumulation import accumulation_runs
 from pavvis._validation import validate_color_by
-from pavvis.plots._helpers import _GROUP_COLOURS
+from pavvis.plots._helpers import _GROUP_COLOURS, _hex_to_rgba
 
 if TYPE_CHECKING:
     from pavvis.pav_matrix import PavMatrix
@@ -332,11 +332,6 @@ def grouped_variable_curve(
     )
 
     return fig
-
-
-def _hex_to_rgba(hex_colour: str, alpha: float) -> str:
-    r, g, b = (int(hex_colour[i:i + 2], 16) for i in (1, 3, 5))
-    return f"rgba({r},{g},{b},{alpha})"
 
 
 def grouped_pangenome_curve(

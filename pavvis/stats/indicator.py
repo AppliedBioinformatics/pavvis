@@ -51,6 +51,13 @@ def indicator_genes(
     with the observed value counted once. q-values use the Benjamini–Hochberg
     procedure over the tested genes only.
 
+    Scope: single groups only (no group combinations, unlike multipatt's default),
+    and labels are permuted freely across all samples (no strata or blocks), so it is
+    not suitable for nested designs. When two groups have exactly the same value,
+    the first group in sorted order is reported; indicspecies picks one at random.
+    Validated against indicspecies 1.8.0: statistic, A and B match to floating-point
+    precision, and p-values agree within Monte Carlo error.
+
     Args:
         pm: A PavMatrix instance.
         column: A discrete metadata column defining the groups.

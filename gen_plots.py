@@ -110,5 +110,7 @@ pm.compute_pcoa()
 import pavvis.plots.pcoa as pcoa_plots
 _save(pcoa_plots.scatter(pm, color_by="clade"), "pcoa_scatter")
 _save(pcoa_plots.scree(pm), "pcoa_scree")
+_save(pcoa_plots.centroids(pm, "clade", permutations=99, random_state=0), "pcoa_centroids")
+_save(pcoa_plots.dispersion_boxplot(pm, "clade"), "pcoa_dispersion_boxplot")
 
 print("Done.")

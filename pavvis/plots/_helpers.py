@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.io as pio
+from scipy.spatial import ConvexHull, QhullError
 
 from pavvis._validation import infer_column_type
 
@@ -24,6 +26,70 @@ _GROUP_COLOURS = [
     "#a8dadc",  # light blue
     "#457b9d",  # steel blue
 ]
+
+
+def _hex_to_rgba(hex_colour: str, alpha: float) -> str:
+    r, g, b = (int(hex_colour[i:i + 2], 16) for i in (1, 3, 5))
+    return f"rgba({r},{g},{b},{alpha})"
+
+
+def _centroid_traces(
+    coords: pd.DataFrame,
+    labels: pd.Series,
+    centres: pd.DataFrame,
+    xcol: str,
+    ycol: str,
+    column: str,
+    centre_name: str,
+    hull: bool,
+) -> list[go.Scatter]:
+    """Hull, spider, point and centre traces for each group in an ordination.
+
+    Each group gets up to four traces sharing a `legendgroup`, tagged with
+    `meta={"kind": ...}` so callers and tests can find them. Groups follow the order
+    of `centres.index` and are coloured from `_GROUP_COLOURS`.
+    """
+    traces = []
+    for i, group in enumerate(centres.index):
+        colour = _GROUP_COLOURS[i % len(_GROUP_COLOURS)]
+        pts = coords.loc[(labels == group).values, [xcol, ycol]]
+        cx, cy = centres.loc[group, xcol], centres.loc[group, ycol]
+
+        if hull and len(pts) >= 3:
+            try:
+                vertices = ConvexHull(pts.values).vertices
+            except QhullError:  # collinear or duplicate points
+                vertices = None
+            if vertices is not None:
+                ring = pts.values[np.append(vertices, vertices[0])]
+                traces.append(go.Scatter(
+                    x=ring[:, 0], y=ring[:, 1], mode="lines", fill="toself",
+                    fillcolor=_hex_to_rgba(colour, 0.12),
+                    line=dict(color=_hex_to_rgba(colour, 0.5), width=1),
+                    legendgroup=group, showlegend=False, hoverinfo="skip", meta={"kind": "hull"},
+                ))
+
+        n = len(pts)
+        spider_x = np.column_stack([pts[xcol], np.full(n, cx), np.full(n, np.nan)]).ravel()
+        spider_y = np.column_stack([pts[ycol], np.full(n, cy), np.full(n, np.nan)]).ravel()
+        traces.append(go.Scatter(
+            x=spider_x, y=spider_y, mode="lines",
+            line=dict(color=_hex_to_rgba(colour, 0.45), width=1),
+            legendgroup=group, showlegend=False, hoverinfo="skip", meta={"kind": "spider"},
+        ))
+        traces.append(go.Scatter(
+            x=pts[xcol], y=pts[ycol], mode="markers", name=f"{group} (n={n})",
+            text=pts.index, marker=dict(color=colour, size=7, line=dict(color="white", width=0.5)),
+            legendgroup=group, meta={"kind": "points"},
+            hovertemplate=f"{column}: {group}<br>%{{text}}<extra></extra>",
+        ))
+        traces.append(go.Scatter(
+            x=[cx], y=[cy], mode="markers",
+            marker=dict(color=colour, size=15, symbol="diamond", line=dict(color="black", width=1.5)),
+            legendgroup=group, showlegend=False, meta={"kind": "centroid"},
+            hovertemplate=f"{group} {centre_name}<extra></extra>",
+        ))
+    return traces
 
 
 def _resolve_gene_index(
