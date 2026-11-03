@@ -3,8 +3,8 @@ This submodule contains functions for visualising the Principal Coordinates Anal
 `pm.compute_pcoa()`. PCoA (classical multidimensional scaling) places samples in a low-dimensional space so that the
 distances between them approximate their pairwise Jaccard distances (1 − Jaccard similarity), ignoring shared absences.
 
-Unlike UMAP, PCoA is a linear, deterministic ordination: each axis has an eigenvalue, so the proportion of variation it
-explains can be reported, and distances on the plot relate directly to the distance matrix used by PERMANOVA and
+Unlike UMAP, PCoA is a linear, deterministic ordination, the proportion of variation in each group 
+can be reported, and distances on the plot relate directly to the distance matrix used by PERMANOVA and
 dispersion tests.
 
 !!! note "Prerequisites"
@@ -72,7 +72,8 @@ pcoa.scree(pm).show()
 ### Description
 
 Plots samples on two PCoA axes with each group's centre (spatial median or mean) and a line from every sample to its
-centre, like `plot(betadisper(...))` in vegan. Shaded convex hulls outline each group.
+centre, similar in logic to the `plot(betadisper(...))` function in the R vegan package. Shaded convex hulls outline
+each group.
 
 The plot does not run any permutation test itself. Run [`permanova` and `betadisper`](../stats/permanova.md) once
 and pass their results: the plot then draws the ordination from the `betadisper` result and annotates the figure with
@@ -110,8 +111,9 @@ pcoa.centroids(pm, "clade", components=(1, 3), hull=False).show()   # no tests, 
 
 ### Description
 
-Distance of each sample to its group centre, one box per group: the equivalent of `boxplot(betadisper(...))`. Pass
-the `betadisper` result to reuse it; otherwise the distances are computed without a test.
+Distance of each sample to its group centre, one box per group: the equivalent of the R package vegans function:
+`boxplot(betadisper(...))`. Pass the `betadisper` result to reuse it; otherwise the distances are computed without a 
+test.
 
 ### Function
 

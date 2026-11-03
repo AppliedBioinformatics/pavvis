@@ -48,5 +48,4 @@ To plot the top indicator genes of each clade, pass `res` to
 
 !!! tip "Which genes are tested"
     By default only variable genes are tested. Core and absent genes cannot be indicators, and including them only weakens
-    the multiple-testing correction. Pass `genes=pm.gene_ids` to test every gene, for example to match an R analysis run on
-    the full matrix.
+    the multiple-testing correction.

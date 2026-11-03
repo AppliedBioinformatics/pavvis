@@ -9,8 +9,7 @@ as input, so the permutation test only has to be run once.
 ### Description
 
 Shows the strongest indicator genes of each group as rows and the groups as columns. Each cell is the fraction of the
-group's samples that carry the gene. Rows are grouped by the group each gene indicates, with a colour strip on the
-left, so good indicators form a dark diagonal block: common in their own group and rare in the others. The cell for a
+group's samples that carry the gene. Colour strips on the left indicate each metadata group, The cell for a
 gene's own group is its fidelity (B); how pale the rest of the row is reflects its specificity (A).
 
 ### Function
@@ -33,10 +32,10 @@ indicator_plots.heatmap(pm, res, "clade", top_n=5).show()
 --8<-- "docs/statics/plots/indicator_heatmap.html"
 
 !!! note "Interpretation"
-    A row that is dark in its own column and white elsewhere is a gene restricted to that group and carried by most of
-    its samples. A row that is dark in its own column but also mid-tone in others indicates a gene enriched in, but not
+    A row dark in its own column and white elsewhere is a gene restricted to that group and carried by most of
+    its samples. A row that is dark in its own column but also dark in others indicates a gene enriched in, but not
     restricted to, the group. A row that is pale everywhere but darkest in its own column is a rare but group-specific
-    gene. Gene IDs can be long; set `show_gene_labels=False` for a compact overview.
+    gene. Gene IDs can be long; set `show_gene_labels=False` for a compact overview when gene IDs do not mean anything.
 
 ---
 
@@ -63,5 +62,6 @@ indicator_plots.specificity_fidelity(pm, res, "clade").show()
 
 !!! note "Interpretation"
     Genes in the upper right are carried by most samples of the group and rarely occur elsewhere. Genes on the right
-    but low down are rare yet almost restricted to the group. Genes at the top but further left are common in the group
-    and also common in others. A group whose cloud sits far to the right has a distinctive gene content.
+    but low down on the plot are rare, yet almost restricted to the group. Genes at the top of the plot but further left
+    are common in the group and also common in others. A group whose cloud sits far to the right has a distinctive 
+    gene content.
