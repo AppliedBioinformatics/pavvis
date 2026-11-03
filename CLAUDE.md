@@ -45,7 +45,18 @@ Each module is a collection of functions that accept a `PavMatrix` and return a 
 - `curves.py` — `legacy_pangenome_curve`, `variable_gene_curve`, `grouped_variable_curve`, `jaccard_similarity_curve`
 - `variable_genes.py` — `frequency_histogram`, `exclusive_genes_bar`
 - `umap.py` — `scatter`, `scatter3d` (require `pm.compute_umap()` to have been called first, or call it in the chain)
-- `_helpers.py` — `_resolve_gene_index` (maps a `gene_set` string to a gene list) and `_gene_set_labels` (axis labels)
+- `pcoa.py` — `scatter`, `scree` (require `pm.compute_pcoa()`), `centroids`, `dispersion_boxplot` (take optional `betadisper_result` / `permanova_result` to draw and annotate; never run permutation tests themselves)
+- `heatmap.py` — `pav_heatmap`, `sample_similarity_heatmap`
+- `indicator.py` — `heatmap` (top indicator genes per group × group presence frequency), `specificity_fidelity` (A vs B per group); both take the `stats.indicator.indicator_genes` result
+- `_helpers.py` — `_resolve_gene_index` (maps a `gene_set` string to a gene list), `_gene_set_labels` (axis labels), `_embedding_scatter_traces` (shared UMAP/PCoA colouring), `_GROUP_COLOURS`, `_hex_to_rgba`, `_centroid_traces` (shared group-centroid drawing)
+
+### Stats (`pavvis/stats/`)
+
+Mirrors `plots/`: each public function takes a `PavMatrix` first and returns a DataFrame or dict. Validated against R (vegan 2.7.5, indicspecies 1.8.0).
+
+- `indicator.py` — `indicator_genes` (IndVal.g, single groups, free permutation, BH q-values; variable genes by default)
+- `permanova.py` — `permanova` (adonis2-style table), `betadisper` (vegan algorithm incl. negative eigenvalue axes; residual permutation test)
+- `pavvis/_ordination.py` — `pcoa_eig`, shared by `PavMatrix.compute_pcoa` and `betadisper`
 
 ### Visualisation (`pavvis/visualisation/`)
 
