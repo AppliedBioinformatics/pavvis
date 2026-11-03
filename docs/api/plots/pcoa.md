@@ -72,8 +72,12 @@ pcoa.scree(pm).show()
 ### Description
 
 Plots samples on two PCoA axes with each group's centre (spatial median or mean) and a line from every sample to its
-centre, like `plot(betadisper(...))` in vegan. Shaded convex hulls outline each group. With `stats=True` the plot is
-annotated with the PERMANOVA and PERMDISP results, so the figure and the tests it illustrates come from one call.
+centre, like `plot(betadisper(...))` in vegan. Shaded convex hulls outline each group.
+
+The plot does not run any permutation test itself. Run [`permanova` and `betadisper`](../stats/permanova.md) once
+and pass their results: the plot then draws the ordination from the `betadisper` result and annotates the figure with
+both tests, so the numbers on the figure are the same ones you report. Without results, the ordination is computed
+without a test and no annotation is added.
 
 Centres are computed in the full PCoA space, as in the dispersion test, and then projected onto the plotted axes.
 
@@ -85,9 +89,13 @@ Centres are computed in the full PCoA space, as in the dispersion test, and then
 
 ``` py
 import pavvis.plots.pcoa as pcoa
+from pavvis.stats.permanova import betadisper, permanova
 
-pcoa.centroids(pm, "clade", permutations=999, random_state=0).show()
-pcoa.centroids(pm, "clade", components=(1, 3), hull=False).show()
+bd = betadisper(pm, "clade", permutations=9999, random_state=42)
+pa = permanova(pm, "clade", permutations=9999, random_state=42)
+
+pcoa.centroids(pm, "clade", betadisper_result=bd, permanova_result=pa).show()
+pcoa.centroids(pm, "clade", components=(1, 3), hull=False).show()   # no tests, no annotation
 ```
 
 --8<-- "docs/statics/plots/pcoa_centroids.html"
@@ -102,7 +110,8 @@ pcoa.centroids(pm, "clade", components=(1, 3), hull=False).show()
 
 ### Description
 
-Distance of each sample to its group centre, one box per group: the equivalent of `boxplot(betadisper(...))`.
+Distance of each sample to its group centre, one box per group: the equivalent of `boxplot(betadisper(...))`. Pass
+the `betadisper` result to reuse it; otherwise the distances are computed without a test.
 
 ### Function
 
@@ -111,7 +120,7 @@ Distance of each sample to its group centre, one box per group: the equivalent o
 ### Example
 
 ``` py
-pcoa.dispersion_boxplot(pm, "clade").show()
+pcoa.dispersion_boxplot(pm, "clade", betadisper_result=bd).show()
 ```
 
 --8<-- "docs/statics/plots/pcoa_dispersion_boxplot.html"

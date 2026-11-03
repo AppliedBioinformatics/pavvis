@@ -37,6 +37,9 @@ sig[sig.group == "Modern"].head(20)         # strongest Modern indicators
 res.join(pm.gene_table(column="clade"))     # add per-group presence counts
 ```
 
+To plot the top indicator genes of each clade, pass `res` to
+[`plots.indicator.heatmap`](../plots/indicator.md).
+
 !!! note "Interpretation"
     A high `stat` with high `B` but moderate `A` describes a gene common in the group that also occurs elsewhere. A high
     `A` with low `B` describes a gene that is rare but almost restricted to the group. With 999 permutations the smallest

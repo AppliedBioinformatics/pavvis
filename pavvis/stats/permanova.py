@@ -53,7 +53,7 @@ def permanova(
     Returns:
         An adonis2-style DataFrame with rows `Model`, `Residual` and `Total` and
         columns `Df`, `SumOfSqs`, `R2`, `F` and `Pr(>F)`. `F` and `Pr(>F)` are only
-        set on the `Model` row.
+        set on the `Model` row. `attrs` records the `column` and `permutations` used.
 
     Raises:
         ValueError: If column is not a discrete metadata column or has fewer than
@@ -76,7 +76,7 @@ def permanova(
         n_ge += ((ss_total - ss_w) / df_model) / (ss_w / df_resid) >= f_obs - 1e-12
     p_value = n_ge / (permutations + 1)
 
-    return pd.DataFrame(
+    table = pd.DataFrame(
         {
             "Df": [df_model, df_resid, n - 1],
             "SumOfSqs": [ss_model, ss_resid, ss_total],
@@ -86,6 +86,8 @@ def permanova(
         },
         index=["Model", "Residual", "Total"],
     )
+    table.attrs = {"column": column, "permutations": permutations}
+    return table
 
 
 def _spatial_median(points: np.ndarray, tol: float = 1e-9, max_iter: int = 1000) -> np.ndarray:
@@ -158,6 +160,7 @@ def betadisper(
             each axis explains.
         - `F`: observed F statistic.
         - `p_value`: permutation p-value.
+        - `column`, `type`, `permutations`: the arguments used.
 
     Raises:
         ValueError: If column is not a discrete metadata column or has fewer than
@@ -198,4 +201,7 @@ def betadisper(
         "explained": pd.Series(vals[vals > 0] / vals[vals > 0].sum(), index=axes, name="explained"),
         "F": float(f_obs),
         "p_value": n_ge / (permutations + 1),
+        "column": column,
+        "type": type,
+        "permutations": permutations,
     }

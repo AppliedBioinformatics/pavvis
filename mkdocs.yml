@@ -65,6 +65,7 @@ nav:
       - Variable Genes: api/plots/variable_genes.md
       - UMAP: api/plots/umap.md
       - PCoA: api/plots/pcoa.md
+      - Indicator Genes: api/plots/indicator.md
     - stats:
       - Indicator Genes: api/stats/indicator.md
       - PERMANOVA: api/stats/permanova.md

@@ -8,7 +8,7 @@ from pavvis import PavMatrix
 from pavvis._ordination import pcoa_eig
 
 
-def _make_pm(tmp_path, pav: np.ndarray, groups: list[str] | None = None) -> PavMatrix:
+def _make_pm(tmp_path, pav: np.ndarray, groups: list[str] | None = None, extra: dict | None = None) -> PavMatrix:
     samples = [f"s{i}" for i in range(pav.shape[1])]
     genes = [f"g{i}" for i in range(pav.shape[0])]
     if groups is None:
@@ -16,7 +16,7 @@ def _make_pm(tmp_path, pav: np.ndarray, groups: list[str] | None = None) -> PavM
     pav_path = tmp_path / "pav.csv"
     meta_path = tmp_path / "metadata.csv"
     pd.DataFrame(pav, index=genes, columns=samples).to_csv(pav_path)
-    pd.DataFrame({"group": groups}, index=samples).to_csv(meta_path)
+    pd.DataFrame({"group": groups, **(extra or {})}, index=samples).to_csv(meta_path)
     return PavMatrix(pav_path, meta_path)
 
 
@@ -182,7 +182,7 @@ def _traces(fig, kind):
 
 def test_centroids_one_centroid_trace_per_group(tmp_path):
     pm = _make_pm(tmp_path, _two_group_pav(), groups=GROUPS_6_6)
-    fig = pcoa.centroids(pm, "group", permutations=9, random_state=0)
+    fig = pcoa.centroids(pm, "group")
     cents = _traces(fig, "centroid")
     assert [t.legendgroup for t in cents] == ["a", "b"]
     assert all(len(t.x) == 1 for t in cents)
@@ -190,7 +190,7 @@ def test_centroids_one_centroid_trace_per_group(tmp_path):
 
 def test_centroids_spider_has_three_points_per_sample(tmp_path):
     pm = _make_pm(tmp_path, _two_group_pav(), groups=GROUPS_6_6)
-    fig = pcoa.centroids(pm, "group", permutations=9, random_state=0)
+    fig = pcoa.centroids(pm, "group")
     spiders = _traces(fig, "spider")
     assert [len(t.x) for t in spiders] == [18, 18]
 
@@ -198,7 +198,7 @@ def test_centroids_spider_has_three_points_per_sample(tmp_path):
 def test_centroids_match_betadisper(tmp_path):
     from pavvis.stats.permanova import betadisper
     pm = _make_pm(tmp_path, _two_group_pav(), groups=GROUPS_6_6)
-    fig = pcoa.centroids(pm, "group", components=(2, 1), type="centroid", permutations=9, random_state=0)
+    fig = pcoa.centroids(pm, "group", components=(2, 1), type="centroid")
     bd = betadisper(pm, "group", type="centroid", permutations=0)
     for t in _traces(fig, "centroid"):
         assert t.x[0] == pytest.approx(bd["centroids"].loc[t.legendgroup, "PCo2"])
@@ -206,19 +206,56 @@ def test_centroids_match_betadisper(tmp_path):
     assert fig.layout.xaxis.title.text.startswith("PCo2 (")
 
 
-def test_centroids_hull_and_stats_toggles(tmp_path):
+def test_centroids_hull_toggle_and_no_annotation_by_default(tmp_path):
     pm = _make_pm(tmp_path, _two_group_pav(), groups=GROUPS_6_6)
-    fig = pcoa.centroids(pm, "group", permutations=9, random_state=0)
+    fig = pcoa.centroids(pm, "group")
     assert len(_traces(fig, "hull")) == 2
-    assert "PERMANOVA" in fig.layout.annotations[0].text
-    fig = pcoa.centroids(pm, "group", hull=False, stats=False, permutations=9)
-    assert not _traces(fig, "hull")
     assert not fig.layout.annotations
+    fig = pcoa.centroids(pm, "group", hull=False)
+    assert not _traces(fig, "hull")
+
+
+def test_centroids_annotates_supplied_results(tmp_path):
+    from pavvis.stats.permanova import betadisper, permanova
+    pm = _make_pm(tmp_path, _two_group_pav(), groups=GROUPS_6_6)
+    bd = betadisper(pm, "group", type="centroid", permutations=19, random_state=0)
+    pa = permanova(pm, "group", permutations=19, random_state=0)
+    fig = pcoa.centroids(pm, "group", betadisper_result=bd, permanova_result=pa)
+    text = fig.layout.annotations[0].text
+    model = pa.loc["Model"]
+    assert f"R² = {model['R2']:.3f}" in text and f"p = {model['Pr(>F)']:.3g}" in text
+    assert f"PERMDISP (centroid): F = {bd['F']:.2f}, p = {bd['p_value']:.3g}" in text
+    assert text.endswith("19 permutations")
+    # The supplied ordination is drawn: centres use the result's type.
+    for t in _traces(fig, "centroid"):
+        assert t.x[0] == pytest.approx(bd["centroids"].loc[t.legendgroup, "PCo1"])
+
+    only_permanova = pcoa.centroids(pm, "group", permanova_result=pa).layout.annotations[0].text
+    assert "PERMANOVA" in only_permanova and "PERMDISP" not in only_permanova
+
+    pa99 = permanova(pm, "group", permutations=29, random_state=0)
+    mixed = pcoa.centroids(pm, "group", betadisper_result=bd, permanova_result=pa99).layout.annotations[0].text
+    assert "PERMANOVA 29" in mixed and "PERMDISP 19" in mixed
+
+
+def test_centroids_rejects_mismatched_results(tmp_path):
+    from pavvis.stats.permanova import betadisper, permanova
+    pm = _make_pm(tmp_path, _two_group_pav(), groups=GROUPS_6_6, extra={"other": ["x", "y"] * 6})
+    bd = betadisper(pm, "group", permutations=0)
+    with pytest.raises(ValueError, match="computed for 'group'"):
+        pcoa.centroids(pm, "other", betadisper_result=bd)
+    with pytest.raises(ValueError, match="type='median'"):
+        pcoa.centroids(pm, "group", betadisper_result=bd, type="centroid")
+    with pytest.raises(ValueError, match="computed for 'other'"):
+        pcoa.centroids(pm, "group", permanova_result=permanova(pm, "other", permutations=0))
+    sub = pm.subset(samples=pm.sample_ids[:10])
+    with pytest.raises(ValueError, match="samples do not match"):
+        pcoa.centroids(sub, "group", betadisper_result=bd)
 
 
 def test_centroids_skips_hull_for_small_groups(tmp_path):
     pm = _make_pm(tmp_path, _random_pav(n_samples=8), groups=["a"] * 6 + ["b"] * 2)
-    fig = pcoa.centroids(pm, "group", stats=False, permutations=9)
+    fig = pcoa.centroids(pm, "group")
     assert [t.legendgroup for t in _traces(fig, "hull")] == ["a"]
 
 
@@ -227,7 +264,7 @@ def test_centroids_invalid_inputs_raise(tmp_path):
     with pytest.raises(ValueError, match="not a metadata column"):
         pcoa.centroids(pm, "nope")
     with pytest.raises(ValueError, match="components"):
-        pcoa.centroids(pm, "group", components=(1, 99), permutations=9)
+        pcoa.centroids(pm, "group", components=(1, 99))
 
 
 def test_dispersion_boxplot_one_box_per_group(tmp_path):
@@ -239,7 +276,16 @@ def test_dispersion_boxplot_one_box_per_group(tmp_path):
     assert np.allclose(sorted(fig.data[0].y), sorted(z.iloc[:6]))
 
 
+def test_dispersion_boxplot_uses_supplied_result(tmp_path):
+    from pavvis.stats.permanova import betadisper
+    pm = _make_pm(tmp_path, _two_group_pav(), groups=GROUPS_6_6)
+    bd = betadisper(pm, "group", type="centroid", permutations=0)
+    fig = pcoa.dispersion_boxplot(pm, "group", betadisper_result=bd)
+    assert np.allclose(sorted(fig.data[0].y), sorted(bd["distances"].iloc[:6]))
+    assert fig.layout.title.text == "Distance to group centroid"
+
+
 def test_centroids_trace_order_per_group(tmp_path):
     pm = _make_pm(tmp_path, _two_group_pav(), groups=GROUPS_6_6)
-    fig = pcoa.centroids(pm, "group", permutations=9, random_state=0)
+    fig = pcoa.centroids(pm, "group")
     assert [t.meta["kind"] for t in fig.data] == ["hull", "spider", "points", "centroid"] * 2

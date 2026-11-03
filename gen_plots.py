@@ -110,7 +110,21 @@ pm.compute_pcoa()
 import pavvis.plots.pcoa as pcoa_plots
 _save(pcoa_plots.scatter(pm, color_by="clade"), "pcoa_scatter")
 _save(pcoa_plots.scree(pm), "pcoa_scree")
-_save(pcoa_plots.centroids(pm, "clade", permutations=99, random_state=0), "pcoa_centroids")
-_save(pcoa_plots.dispersion_boxplot(pm, "clade"), "pcoa_dispersion_boxplot")
+from pavvis.stats.permanova import betadisper, permanova
+bd = betadisper(pm, "clade", permutations=99, random_state=0)
+pa = permanova(pm, "clade", permutations=99, random_state=0)
+_save(pcoa_plots.centroids(pm, "clade", betadisper_result=bd, permanova_result=pa), "pcoa_centroids")
+_save(pcoa_plots.dispersion_boxplot(pm, "clade", betadisper_result=bd), "pcoa_dispersion_boxplot")
+
+print("Generating indicator gene plots...")
+if not reset and all((OUT_DIR / f"{n}.html").exists()
+                     for n in ("indicator_heatmap", "indicator_specificity_fidelity")):
+    print("  skipped indicator gene analysis (output already exists)")
+else:
+    from pavvis.stats.indicator import indicator_genes
+    import pavvis.plots.indicator as indicator_plots
+    indicators = indicator_genes(pm, "clade", permutations=99, random_state=0)
+    _save(indicator_plots.heatmap(pm, indicators, "clade", top_n=5), "indicator_heatmap")
+    _save(indicator_plots.specificity_fidelity(pm, indicators, "clade"), "indicator_specificity_fidelity")
 
 print("Done.")

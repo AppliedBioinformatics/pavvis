@@ -11,6 +11,8 @@ from pavvis.plots._helpers import _GROUP_COLOURS, _centroid_traces, _embedding_s
 pio.templates.default = "simple_white"
 
 if TYPE_CHECKING:
+    import pandas as pd
+
     from pavvis.pav_matrix import PavMatrix
 
 
@@ -104,15 +106,35 @@ def scree(pm: PavMatrix) -> go.Figure:
     return fig
 
 
+def _betadisper_for_plot(
+    pm: PavMatrix, column: str, betadisper_result: dict | None, type: str | None
+) -> dict:
+    """Return a supplied betadisper result after checking it matches, or compute one without permutations."""
+    if betadisper_result is None:
+        from pavvis.stats.permanova import betadisper
+        return betadisper(pm, column, type=type or "median", permutations=0)
+
+    if betadisper_result.get("column", column) != column:
+        raise ValueError(
+            f"betadisper_result was computed for '{betadisper_result['column']}', not '{column}'."
+        )
+    if type is not None and betadisper_result.get("type", type) != type:
+        raise ValueError(
+            f"betadisper_result uses type='{betadisper_result['type']}', but type='{type}' was given."
+        )
+    if list(betadisper_result["distances"].index) != list(pm.sample_ids):
+        raise ValueError("betadisper_result samples do not match pm. Was it computed on a different PavMatrix?")
+    return betadisper_result
+
+
 def centroids(
     pm: PavMatrix,
     column: str,
     components: tuple[int, int] = (1, 2),
-    type: Literal["median", "centroid"] = "median",
     hull: bool = True,
-    stats: bool = True,
-    permutations: int = 999,
-    random_state: int | None = None,
+    betadisper_result: dict | None = None,
+    permanova_result: pd.DataFrame | None = None,
+    type: Literal["median", "centroid"] | None = None,
 ) -> go.Figure:
     """Plot samples and their group centres in PCoA space, like `plot(vegan::betadisper(...))`.
 
@@ -123,6 +145,11 @@ def centroids(
     test measured. Centres are computed in the full PCoA space and projected onto the
     two plotted axes, so a centre need not sit in the visual middle of its points.
 
+    The plot does not run any permutation test. Pass the results of
+    `pavvis.stats.permanova.betadisper` and `pavvis.stats.permanova.permanova` to
+    reuse their ordination and annotate the plot with their statistics, so the
+    figure shows exactly the numbers reported elsewhere.
+
     Clicking a group in the legend toggles its points, lines, centre and hull together.
     Groups are coloured in sorted order; colours repeat after eight groups.
 
@@ -130,26 +157,31 @@ def centroids(
         pm: A PavMatrix instance. A PCoA does not need to be computed first.
         column: A discrete metadata column defining the groups.
         components: The two 1-based PCoA axes to plot on x and y. Defaults to (1, 2).
-        type: Group centre: 'median' (spatial median, vegan's default) or
-            'centroid' (mean). Defaults to 'median'.
         hull: If True, shade the convex hull of each group with at least 3 samples.
             Defaults to True.
-        stats: If True, run `permanova` and annotate the plot with its R², F and p,
-            and with the PERMDISP F and p. Defaults to True.
-        permutations: Permutations for both tests when `stats` is True. Defaults to 999.
-        random_state: Random seed for the permutation tests. Defaults to None.
+        betadisper_result: The dict returned by `betadisper(pm, column, ...)`. Its
+            coordinates and centres are drawn, and its PERMDISP F and p are added to
+            the annotation. If None, the ordination is computed without a test.
+        permanova_result: The table returned by `permanova(pm, column, ...)`. If
+            given, its R², F and p are added to the annotation.
+        type: Group centre: 'median' (spatial median, vegan's default) or
+            'centroid' (mean). Defaults to the type of `betadisper_result`, or
+            'median' if none is given.
 
     Returns:
         A Plotly Figure. Call .show() to display or .write_html() to export.
 
     Raises:
         ValueError: If column is not a discrete metadata column with at least 2
-            groups, or if a component exceeds the number of positive PCoA axes.
+            groups, if a component exceeds the number of positive PCoA axes, or if a
+            supplied result was computed for a different column, type or PavMatrix.
     """
-    from pavvis.stats.permanova import betadisper, permanova
-
-    bd = betadisper(pm, column, type=type, permutations=permutations if stats else 0,
-                    random_state=random_state)
+    bd = _betadisper_for_plot(pm, column, betadisper_result, type)
+    type = bd.get("type", type or "median")
+    if permanova_result is not None and permanova_result.attrs.get("column", column) != column:
+        raise ValueError(
+            f"permanova_result was computed for '{permanova_result.attrs['column']}', not '{column}'."
+        )
     coords, cents, explained = bd["coordinates"], bd["centroids"], bd["explained"]
     n_axes = coords.shape[1]
     if any(not 1 <= c <= n_axes for c in components):
@@ -167,16 +199,24 @@ def centroids(
         yaxis_title=f"{ycol} ({explained[ycol] * 100:.1f}%)",
         legend_title_text=column,
     )
-    if stats:
-        model = permanova(pm, column, permutations=permutations, random_state=random_state).loc["Model"]
+    lines, perms = [], {}
+    if permanova_result is not None:
+        model = permanova_result.loc["Model"]
+        lines.append(f"PERMANOVA: R² = {model['R2']:.3f}, F = {model['F']:.2f}, p = {model['Pr(>F)']:.3g}")
+        perms["PERMANOVA"] = permanova_result.attrs.get("permutations")
+    if betadisper_result is not None:
+        lines.append(f"PERMDISP ({type}): F = {bd['F']:.2f}, p = {bd['p_value']:.3g}")
+        perms["PERMDISP"] = bd.get("permutations")
+    if lines:
+        counts = set(perms.values()) - {None}
+        if len(counts) == 1:
+            lines.append(f"{counts.pop():,} permutations")
+        elif counts:
+            lines.append("permutations: " + ", ".join(f"{k} {v:,}" for k, v in perms.items() if v is not None))
         fig.add_annotation(
             xref="paper", yref="paper", x=0.01, y=0.99, xanchor="left", yanchor="top",
             align="left", showarrow=False, bgcolor="rgba(255,255,255,0.8)",
-            text=(
-                f"PERMANOVA: R² = {model['R2']:.3f}, F = {model['F']:.2f}, p = {model['Pr(>F)']:.3g}<br>"
-                f"PERMDISP ({type}): F = {bd['F']:.2f}, p = {bd['p_value']:.3g}<br>"
-                f"{permutations:,} permutations"
-            ),
+            text="<br>".join(lines),
         )
     return fig
 
@@ -184,28 +224,34 @@ def centroids(
 def dispersion_boxplot(
     pm: PavMatrix,
     column: str,
-    type: Literal["median", "centroid"] = "median",
+    betadisper_result: dict | None = None,
+    type: Literal["median", "centroid"] | None = None,
 ) -> go.Figure:
     """Plot each sample's distance to its group centre as one box per group.
 
     The equivalent of `boxplot(vegan::betadisper(...))`. Distances come from
-    `pavvis.stats.permanova.betadisper`; run that function for the PERMDISP test.
+    `pavvis.stats.permanova.betadisper`; run that function for the PERMDISP test
+    and pass its result here to reuse it.
 
     Args:
         pm: A PavMatrix instance.
         column: A discrete metadata column defining the groups.
+        betadisper_result: The dict returned by `betadisper(pm, column, ...)`. If
+            None, the distances are computed without a test.
         type: Group centre: 'median' (spatial median, vegan's default) or
-            'centroid' (mean). Defaults to 'median'.
+            'centroid' (mean). Defaults to the type of `betadisper_result`, or
+            'median' if none is given.
 
     Returns:
         A Plotly Figure. Call .show() to display or .write_html() to export.
 
     Raises:
-        ValueError: If column is not a discrete metadata column with at least 2 groups.
+        ValueError: If column is not a discrete metadata column with at least 2
+            groups, or if `betadisper_result` was computed for a different column,
+            type or PavMatrix.
     """
-    from pavvis.stats.permanova import betadisper
-
-    bd = betadisper(pm, column, type=type, permutations=0)
+    bd = _betadisper_for_plot(pm, column, betadisper_result, type)
+    type = bd.get("type", type or "median")
     z = bd["distances"]
     labels = pm.metadata.loc[z.index, column].astype(str)
 

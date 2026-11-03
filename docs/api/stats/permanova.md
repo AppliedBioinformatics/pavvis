@@ -7,7 +7,15 @@ PERMANOVA asks whether group centroids differ more than expected by chance. It i
 spread, so a significant PERMANOVA should be read together with the dispersion test: if dispersions differ, the
 PERMANOVA result may reflect spread rather than location.
 
-To see both on one figure, use [`pcoa.centroids`](../plots/pcoa.md#group-centroids).
+To show both on one figure, pass the results to [`pcoa.centroids`](../plots/pcoa.md#group-centroids):
+
+``` py
+import pavvis.plots.pcoa as pcoa
+
+pcoa.centroids(pm, "clade", betadisper_result=bd, permanova_result=pa)
+```
+
+The plot reuses the results rather than re-running the tests, so the figure annotation matches the reported values.
 
 ---
 
@@ -24,7 +32,8 @@ from pavvis import PavMatrix
 from pavvis.stats.permanova import permanova
 
 pm = PavMatrix("path/to/pav.csv", "path/to/metadata.csv")
-permanova(pm, "clade", permutations=9999, random_state=42)
+pa = permanova(pm, "clade", permutations=9999, random_state=42)
+pa
 ```
 
 ```
@@ -59,4 +68,4 @@ bd["distances"].groupby(pm.metadata["clade"]).mean()   # mean distance to centre
 
 !!! note "Interpretation"
     A significant result means some groups are more variable in gene content than others. Use
-    [`pcoa.dispersion_boxplot`](../plots/pcoa.md#dispersion-boxplot) to see which.
+    [`pcoa.dispersion_boxplot(pm, "clade", betadisper_result=bd)`](../plots/pcoa.md#dispersion-boxplot) to see which.
