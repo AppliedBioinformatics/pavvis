@@ -6,3 +6,4 @@ site/
 *.pyc
 /plots/
 /dist/
+/supplementary_data.xlsx
