@@ -5,3 +5,4 @@ site/
 /tests/data/
 *.pyc
 /plots/
+/dist/

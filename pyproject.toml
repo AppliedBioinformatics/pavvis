@@ -6,6 +6,14 @@ build-backend = "hatchling.build"
 name = "pavvis"
 version = "0.1.0"
 description = "Visualisation tools for gene Presence/Absence Variation (PAV) matrix data"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Jack Bruton", email = "jack.bruton@uwa.edu.au" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
@@ -24,5 +32,11 @@ docs = [
     "ruff",
 ]
 
+[project.urls]
+Homepage = "https://github.com/AppliedBioinformatics/pavvis"
+
 [tool.hatch.build.targets.wheel]
 packages = ["pavvis"]
+
+[tool.hatch.build.targets.sdist]
+include = ["pavvis", "tests", "README.md", "LICENSE", "pyproject.toml"]
